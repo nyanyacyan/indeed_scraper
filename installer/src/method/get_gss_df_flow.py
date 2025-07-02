@@ -16,11 +16,10 @@ from method.base.utils.time_manager import TimeManager
 from method.base.selenium.google_drive_download import GoogleDriveDownload
 from method.base.spreadsheet.spreadsheetWrite import GssWrite
 from method.base.spreadsheet.select_cell import GssSelectCell
-from method.base.spreadsheet.err_checker_write import GssCheckerErrWrite
 from method.base.utils.popup import Popup
 
 # const
-from method.const_element import GssInfo, LoginInfo, ErrCommentInfo, PopUpComment
+from method.const_element import GssInfo, ErrCommentInfo, PopUpComment
 
 deco = Decorators()
 
@@ -44,17 +43,15 @@ class GetGssDfFlow:
         self.gss_write = GssWrite()
         self.drive_download = GoogleDriveDownload()
         self.select_cell = GssSelectCell()
-        self.gss_check_err_write = GssCheckerErrWrite()
         self.popup = Popup()
 
 
         self.timestamp = datetime.now().strftime("%Y-%m-%d %H:%M")
 
         # const
-        self.const_gss_info = GssInfo.INSTA.value
-        self.const_login_info = LoginInfo.INSTA.value
-        self.const_err_cmt_dict = ErrCommentInfo.INSTA.value
-        self.popup_cmt = PopUpComment.INSTA.value
+        self.const_gss_info = GssInfo.INDEED.value
+        self.const_err_cmt_dict = ErrCommentInfo.INDEED.value
+        self.popup_cmt = PopUpComment.INDEED.value
 
 
     ####################################################################################
@@ -65,7 +62,7 @@ class GetGssDfFlow:
         try:
             # スプシにアクセス（Worksheet指定）
             df = self.gss_read._get_df_gss_url(worksheet_name=worksheet_name, json_key_name=self.const_gss_info['JSON_KEY_NAME'], sheet_url=self.const_gss_info['SHEET_URL'])
-            df_filtered = df[df["チェック"] == "TRUE"]
+            df_filtered = df[df[self.const_gss_info['SELECT_CHECK']] == "TRUE"]
 
             df_filtered.empty
             if df_filtered.empty:

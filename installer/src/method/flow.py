@@ -1,18 +1,11 @@
 # coding: utf-8
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-# export PYTHONPATH="/Users/nyanyacyan/Desktop/project_file/ccx_csv_to_drive/installer/src"
-# export PYTHONPATH="/Users/nyanyacyan/Desktop/Project_file/instagram_list_tool/installer/src"
+# export PYTHONPATH="/Volumes/にゃにゃちゃんHD/Project_file/indeed_scraper/installer/src"
 
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 # import
-import os, time
-import pandas as pd
-import concurrent.futures
-from typing import Dict
-from datetime import datetime, date, timedelta
-from selenium.webdriver.common.by import By
-from selenium.webdriver.common.action_chains import ActionChains
-from selenium.webdriver.common.keys import Keys
+import os
+from datetime import datetime
 
 # 自作モジュール
 from method.base.utils.logger import Logger
@@ -22,29 +15,28 @@ from method.base.selenium.seleniumBase import SeleniumBasicOperations
 from method.base.spreadsheet.spreadsheetRead import GetDataGSSAPI
 from method.base.selenium.get_element import GetElement
 from method.base.decorators.decorators import Decorators
-from method.base.utils.time_manager import TimeManager
-from method.base.selenium.google_drive_download import GoogleDriveDownload
 from method.base.spreadsheet.spreadsheetWrite import GssWrite
 from method.base.spreadsheet.select_cell import GssSelectCell
-from method.base.spreadsheet.err_checker_write import GssCheckerErrWrite
 from method.base.selenium.loginWithId import SingleSiteIDLogin
 from method.base.utils.popup import Popup
 from method.base.selenium.click_element import ClickElement
 from method.base.utils.file_move import FileMove
-from method.base.selenium.google_drive_upload import GoogleDriveUpload
 from method.get_gss_df_flow import GetGssDfFlow
 from method.base.selenium.driverWait import Wait
-# from method.base.utils.date_manager import DateManager
+
 from method.base.utils.sub_date_mrg import DateManager
 
 
 # const
-from method.const_element import ( GssInfo, LoginInfo, ErrCommentInfo, PopUpComment, Element, )
+from method.const_element import (
+    GssInfo,
+    ErrCommentInfo,
+    PopUpComment,
+    Element,
+)
 
 # flow
 # from method.good_flow import GetUserToInsta
-from method.comment_flow import CommentFlow
-from method.good_flow import GoodFlow
 
 deco = Decorators()
 
@@ -67,17 +59,13 @@ class SingleProcess:
         self.chrome = self.chromeManager.flowSetupChrome()
 
         # const
-        self.const_gss_info = GssInfo.INSTA.value
-        self.const_login_info = LoginInfo.INSTA.value
-        self.const_element = Element.INSTA.value
-        self.const_err_cmt_dict = ErrCommentInfo.INSTA.value
-        self.popup_cmt = PopUpComment.INSTA.value
+        self.const_gss_info = GssInfo.INDEED.value
+        self.const_element = Element.INDEED.value
+        self.const_err_cmt_dict = ErrCommentInfo.INDEED.value
+        self.popup_cmt = PopUpComment.INDEED.value
 
         # Flow
         self.get_gss_df_flow = GetGssDfFlow(chrome=self.chrome)
-        # self.get_user_data = GetUserToInsta(chrome=self.chrome)
-        self.comment_flow = CommentFlow(chrome=self.chrome)
-        self.good_flow = GoodFlow(chrome=self.chrome)
 
         # インスタンス
         self.login = SingleSiteIDLogin(chrome=self.chrome)
@@ -86,10 +74,7 @@ class SingleProcess:
         self.selenium = SeleniumBasicOperations(chrome=self.chrome)
         self.gss_read = GetDataGSSAPI()
         self.gss_write = GssWrite()
-        self.drive_download = GoogleDriveDownload()
-        self.drive_upload = GoogleDriveUpload()
         self.select_cell = GssSelectCell()
-        self.gss_check_err_write = GssCheckerErrWrite()
         self.popup = Popup()
         self.click_element = ClickElement(chrome=self.chrome)
         self.file_move = FileMove()
@@ -97,30 +82,44 @@ class SingleProcess:
         self.date_manager = DateManager()
         self.select_cell = GssSelectCell()
 
-
     # **********************************************************************************
     # ----------------------------------------------------------------------------------
 
     def _single_process(self):
         """各プロセスを実行する"""
         try:
-            #* 今回はログインあとのフロートする
-            # GSSよりデータ取得→dfを作成
-            target_df = self.get_gss_df_flow.process(worksheet_name=self.const_gss_info['TARGET_WORKSHEET_NAME'])
-            account_info = self.get_gss_df_flow.get_account_process(worksheet_name=self.const_gss_info['ACCOUNT_WORKSHEET_NAME'])
-
-            # ログイン
-            self.login.flowLoginID(id_text=account_info['GSS_ID_TEXT'], pass_text=account_info['GSS_PASS_TEXT'], login_info=self.const_login_info)
-
-            # 対象のページが開いているかどうかを確認
-            self.wait.canWaitClick(value=self.const_element['value_1'])
-
+            # * 今回はログインあとのフロートする
             # Googleスプレッドシートから情報取得
             # - 「マスター」シートへアクセス
+            target_df = self.get_gss_df_flow.process(
+                worksheet_name=self.const_gss_info["MASTER_WS"]
+            )
+
             # - 1行目から以下の情報を取得
             #   - 検索キーワード
             #   - 検索地域
-            #   - 除外ワード
+            #   - 除外ワード1~5
+            #   - 対象Worksheet
+            target_df.iterrows()
+            for index, row in target_df.iterrows():
+                # 各行の情報を取得
+                search_word = row[self.const_gss_info["SEARCH_WORDS"]]
+                search_region = row[self.const_gss_info["SEARCH_REGION"]]
+
+                excluded_words_first = row[self.const_gss_info["EXCLUDED_WORDS_FIRST"]]
+                excluded_words_second = row[self.const_gss_info["EXCLUDED_WORDS_SECOND"]]
+                excluded_words_third = row[self.const_gss_info["EXCLUDED_WORDS_THIRD"]]
+                excluded_words_fourth = row[self.const_gss_info["EXCLUDED_WORDS_FOURTH"]]
+                excluded_words_fifth = row[self.const_gss_info["EXCLUDED_WORDS_FIFTH"]]
+
+                target_worksheet = row[self.const_gss_info["ADD_WS"]]
+
+                #! ここから処理を開始
+                self.logger.info(f"処理開始： {index + 1}行目")
+                self.logger.info( f"検索キーワード: {search_word}\n 検索地域: {search_region}\n 対象Worksheet: {target_worksheet}" )
+                self.logger.info(f"除外ワード1: {excluded_words_first}\n除外ワード2: {excluded_words_second}\n除外ワード3: {excluded_words_third}\n除外ワード4: {excluded_words_fourth}\n除外ワード5: {excluded_words_fifth}")
+                self.logger.info(f"target_worksheet: {target_worksheet}")
+
 
             # 2
             # ログインURLへアクセス
@@ -128,6 +127,9 @@ class SingleProcess:
 
             # 3
             # ログイン後、検索窓が表示されるまで最大300秒待機
+
+            # 対象のページが開いているかどうかを確認
+            self.wait.canWaitClick(value=self.const_element["value_1"])
 
             # 4
             # 新しいタブを開き、クッキー情報を維持したままアクセス
@@ -146,6 +148,7 @@ class SingleProcess:
             # - 例：`jobsearch-ViewjobPaneWrapper` などの要素対象
 
             # 9
+            # スプシからbasePromptを取得
             # テキストをプロンプト整形 → ChatGPT APIへ送信
             # - 取得対象項目：
             #   - 勤務地
@@ -168,36 +171,47 @@ class SingleProcess:
             # 14
             # 次の検索条件行へ移動し、Step [1] から再実行
 
-                        # # 新しいタブを開いてURLにアクセス
-                        # main_window = self.chrome.current_window_handle
-                        # self.get_element._open_new_page(url=target_user_url)
-                        # self.random_sleep._random_sleep(2, 5)
+            # 15
+            # TODO exe化させる
+            # →本番用のAPIKEYが必要→差し替えて使う
 
+            #! 全体テストを構築（main.pyを繰り返し実行するCode作成）
+            # TODO 書込Formatを作成してなるべくあとから変更可能なように設計
+            # TODO 通知はSlackにする→テストの日付ごとに分けるなどの設計を行ってわかりやすくなるようにする
+            # # 新しいタブを開いてURLにアクセス
+            # main_window = self.chrome.current_window_handle
+            # self.get_element._open_new_page(url=target_user_url)
+            # self.random_sleep._random_sleep(2, 5)
 
-                        # # 投稿完了→スプシに日付の書込
-                        # self.logger.debug(f"投稿完了→スプシに日付の書込")
-                        # self.logger.debug(f"cell: {gss_date_cell}")
-                        # self.gss_write.write_data_by_url(gss_info=self.const_gss_info, cell=gss_date_cell, input_data=self.timestamp)
+            # # 投稿完了→スプシに日付の書込
+            # self.logger.debug(f"投稿完了→スプシに日付の書込")
+            # self.logger.debug(f"cell: {gss_date_cell}")
+            # self.gss_write.write_data_by_url(gss_info=self.const_gss_info, cell=gss_date_cell, input_data=self.timestamp)
 
-                        # # 対象のタブを閉じる
-                        # self.chrome.close()
-                        # self.chrome.switch_to.window(main_window)
-                        # self.logger.debug(f"タブを閉じました: {target_user_url}")
-                        # self.logger.warning(f"【{account_process_count + 1}つ目】処理完了  URL: {target_user_url}")
-                        # account_process_count += 1
+            # # 対象のタブを閉じる
+            # self.chrome.close()
+            # self.chrome.switch_to.window(main_window)
+            # self.logger.debug(f"タブを閉じました: {target_user_url}")
+            # self.logger.warning(f"【{account_process_count + 1}つ目】処理完了  URL: {target_user_url}")
+            # account_process_count += 1
 
         except TimeoutError:
             timeout_comment = "タイムエラー：ログインに失敗している可能性があります。"
             self.logger.error(f"{self.__class__.__name__} {timeout_comment}")
 
         except Exception as e:
-            process_error_comment = ( f"{self.__class__.__name__} 処理中にエラーが発生 {e}" )
+            process_error_comment = (
+                f"{self.__class__.__name__} 処理中にエラーが発生 {e}"
+            )
             self.logger.error(process_error_comment)
 
         finally:
             # ✅ Chrome を終了
             self.chrome.quit()
-            self.popup.popupCommentOnly( popupTitle=self.popup_cmt["POPUP_COMPLETE_TITLE"], comment=self.popup_cmt["POPUP_COMPLETE_MSG"], )
+            self.popup.popupCommentOnly(
+                popupTitle=self.popup_cmt["POPUP_COMPLETE_TITLE"],
+                comment=self.popup_cmt["POPUP_COMPLETE_MSG"],
+            )
 
     # ----------------------------------------------------------------------------------
 
@@ -207,7 +221,9 @@ class SingleProcess:
             self.logger.info(f"指定のファイルの削除を実施: {file_path}")
 
         else:
-            self.logger.error( f"{self.__class__.__name__} ファイルが存在しません: {file_path}" )
+            self.logger.error(
+                f"{self.__class__.__name__} ファイルが存在しません: {file_path}"
+            )
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

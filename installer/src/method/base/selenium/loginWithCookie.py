@@ -69,15 +69,15 @@ class CookieLogin:
     # ----------------------------------------------------------------------------------
     # 2段階ログイン
 
-    def flowSwitchLogin(self, cookies: dict, url: str, loginInfo: dict, delay: int = 2):
+    def flowSwitchLogin(self, cookies: dict, url: str: dict, delay: int = 2):
         if self.chrome.current_url == self.targetUrl:
             return
 
         if cookies is None:
-            self.idLogin.flowLoginID(url=url, loginInfo=loginInfo)
+            self.idLogin.flowLoginID(url=url=loginInfo)
             return
 
-        if self.cookieLogin(cookies=cookies, url=url, loginInfo=loginInfo):
+        if self.cookieLogin(cookies=cookies, url=url=loginInfo):
             time.sleep(delay)  # 広告などが遅れて表示されることを懸念
             # 検索画面、広告が合った場合に消去
             self.element.closePopup(
@@ -89,14 +89,14 @@ class CookieLogin:
                 "Cookieログインに失敗したためセッションログインに切り替えます"
             )
             result = self.sessionBeforeAction(
-                cookies=cookies, url=url, loginInfo=loginInfo
+                cookies=cookies, url=url=loginInfo
             )
 
             if result is None:
                 self.logger.warning(
                     f"Sessionログインに゙失敗したためIDログインを実施: {result}"
                 )
-                self.idLogin.flowLoginID(url=url, loginInfo=loginInfo)
+                self.idLogin.flowLoginID(url=url=loginInfo)
 
     # ----------------------------------------------------------------------------------
     # sessionログイン
@@ -148,7 +148,7 @@ class CookieLogin:
     # ----------------------------------------------------------------------------------
     # Cookieログイン
 
-    def cookieLogin(self, cookies: dict, url: str, loginInfo: dict):
+    def cookieLogin(self, cookies: dict, url: str: dict):
 
         self.logger.info(f"cookies: {cookies}")
 
@@ -171,7 +171,7 @@ class CookieLogin:
             self.logger.error(
                 f"ドメインが変わるサイトのためIDログインに切り替えます。{e}"
             )
-            self.idLogin.flowLoginID(url=url, loginInfo=loginInfo)
+            self.idLogin.flowLoginID(url=url=loginInfo)
 
         return self.loginCheck(url=url)
 
