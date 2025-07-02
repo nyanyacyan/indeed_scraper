@@ -56,6 +56,7 @@ class CookieManager:
         if self.sqlite.boolFilePath():
             self.sqlite.checkTableExists()
             return self.cookieDataExistsInDB(url=url, loginInfo=loginInfo)
+
         else:
             self.logger.debug(
                 f"{self.tableName} が作られてません。これよりテーブル作成開始"
@@ -314,6 +315,7 @@ class CookieManager:
                 "有効期限切れのcookie: 既存のCookieを消去して再度IDログイン実施"
             )
             return self.getCookieFromAction2(url=url, loginInfo=loginInfo)
+
 
 
 # ----------------------------------------------------------------------------------

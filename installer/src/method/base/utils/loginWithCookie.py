@@ -35,7 +35,6 @@ class CookieLogin:
         homeUrl: str,
         targetUrl: str,
         signInUrl: str,
-        ,
     ):
         # logger
         self.getLogger = Logger()
@@ -56,13 +55,11 @@ class CookieLogin:
             chrome=self.chrome,
             loginUrl=self.loginUrl,
             homeUrl=self.homeUrl,
-            ,
         )
         self.idLogin = SingleSiteIDLogin(
             chrome=self.chrome,
             homeUrl=self.homeUrl,
             loginUrl=self.loginUrl,
-            ,
         )
         self.element = ElementManager(chrome=self.chrome, )
 
@@ -97,6 +94,7 @@ class CookieLogin:
                     f"Sessionログインに゙失敗したためIDログインを実施: {result}"
                 )
                 self.idLogin.flowLoginID(url=url, loginInfo=loginInfo)
+
 
     # ----------------------------------------------------------------------------------
     # sessionログイン

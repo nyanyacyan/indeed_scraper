@@ -20,7 +20,6 @@ from method.base.selenium.driverDeco import jsCompleteWaitDeco, InputDeco, Click
 from method.base.spreadsheet.spreadsheetWrite import GssWrite
 
 # const
-from method.const_element import LoginInfo
 
 decoInstance = Decorators()
 decoJsInstance = jsCompleteWaitDeco()

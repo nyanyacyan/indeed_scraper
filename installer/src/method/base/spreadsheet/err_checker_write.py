@@ -10,7 +10,7 @@ from method.base.spreadsheet.spreadsheetWrite import GssWrite
 from method.base.utils.popup import Popup
 
 # const
-from method.const_element import GssInfo, LoginInfo, ErrCommentInfo
+from method.const_element import GssInfo, ErrCommentInfo
 
 # ----------------------------------------------------------------------------------
 ####################################################################################
@@ -24,16 +24,14 @@ class GssCheckerErrWrite:
         self.getLogger = Logger()
         self.logger = self.getLogger.getLogger()
 
-        self.const_gss_info_dict = GssInfo.INSTA.value
-        self.const_login_dict = LoginInfo.INSTA.value
-        self.const_err_cmt_dict = ErrCommentInfo.INSTA.value
+        self.const_gss_info_dict = GssInfo.INDEED.value
+        self.const_err_cmt_dict = ErrCommentInfo.INDEED.value
         self.gss_write = GssWrite()
         self.popup = Popup()
 
         # const
-        self.const_gss_info = GssInfo.INSTA.value
-        self.const_login_info = LoginInfo.INSTA.value
-        self.const_err_cmt_dict = ErrCommentInfo.INSTA.value
+        self.const_gss_info = GssInfo.INDEED.value
+        self.const_err_cmt_dict = ErrCommentInfo.INDEED.value
 
         # const 明確化
         self.const_col_name = self.const_gss_info["NAME"]
