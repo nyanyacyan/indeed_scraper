@@ -52,24 +52,25 @@ class CookieManager:
     # DBが存在確認
 
     @decoInstance.funcBase
-    def startBoolFilePath(self, url: str: dict):
+    def startBoolFilePath(self, url: str, loginInfo: dict):
         if self.sqlite.boolFilePath():
             self.sqlite.checkTableExists()
-            return self.cookieDataExistsInDB(url=url=loginInfo)
+            return self.cookieDataExistsInDB(url=url, loginInfo=loginInfo)
+
         else:
             self.logger.debug(
                 f"{self.tableName} が作られてません。これよりテーブル作成開始"
             )
             self.sqlite.isFileExists()  # ファイルを作成
             self.sqlite.createAllTable()  # 全てのテーブルを作成
-            return self.getCookieFromAction2(url=url=loginInfo)
+            return self.getCookieFromAction2(url=url, loginInfo=loginInfo)
 
     # ----------------------------------------------------------------------------------
     # ②
     # DBにCookieの存在確認
 
     @decoInstance.funcBase
-    def cookieDataExistsInDB(self, url: str: dict):
+    def cookieDataExistsInDB(self, url: str, loginInfo: dict):
         DBColNames = self.sqlite.columnsExists(tableName=self.tableName)
 
         self.logger.debug(f"DBColNames: {DBColNames}")
@@ -79,19 +80,19 @@ class CookieManager:
         result = all(cokName in DBColNames for cokName in self.columnsName)
         if result is True:
             self.logger.info(f"DBの中にcookieのテーブルを発見\n{DBColNames}")
-            return self.checkCookieLimit(url=url=loginInfo)
+            return self.checkCookieLimit(url=url, loginInfo=loginInfo)
         else:
             self.logger.warning(
                 f"{self.tableName} のテーブルデータがありません。Cookieを取得します"
             )
-            return self.getCookieFromAction2(url=url=loginInfo)
+            return self.getCookieFromAction2(url=url, loginInfo=loginInfo)
 
     # ----------------------------------------------------------------------------------
     # ③
     # DBにあるCookieの有効期限が有効化を確認
 
     @decoInstance.funcBase
-    def checkCookieLimit(self, url: str: dict):
+    def checkCookieLimit(self, url: str, loginInfo: dict):
         newCookieData = self.sqlite.getColMaxValueRow(
             tableName=self.tableName, primaryKey=self.primaryKey
         )
@@ -126,25 +127,25 @@ class CookieManager:
 
             elif expiresValue:
                 return self._getExpiresLimit(
-                    expiresValue=expiresValue, url=url=loginInfo
+                    expiresValue=expiresValue, url=url, loginInfo=loginInfo
                 )
 
             else:
                 self.logger.warning("Cookieの有効期限が設定されてません")
-                return self.getCookieFromAction2(url=url=loginInfo)
+                return self.getCookieFromAction2(url=url, loginInfo=loginInfo)
 
         else:
             self.logger.error(
                 f"DBテーブルの中にcookieのデータが存在しません: {newCookieData}"
             )
-            return self.getCookieFromAction2(url=url=loginInfo)
+            return self.getCookieFromAction2(url=url, loginInfo=loginInfo)
 
     # ----------------------------------------------------------------------------------
 
     @decoInstance.noneRetryAction()
-    def getCookieFromAction(self, url: str: dict):
+    def getCookieFromAction(self, url: str, loginInfo: dict):
         # IDログイン
-        self.loginID.flowLoginID(url=url=loginInfo)
+        self.loginID.flowLoginID(url=url, loginInfo=loginInfo)
 
         # Cookieを取得
         cookie = self.getCookie()
@@ -155,9 +156,9 @@ class CookieManager:
     # いい生活Clickを追加したバージョン
 
     @decoInstance.noneRetryAction()
-    def getCookieFromAction2(self, url: str: dict):
+    def getCookieFromAction2(self, url: str, loginInfo: dict):
         # サイトにいってClickしてからIDログイン
-        self.loginID.actionBeforeLogin(url=url=loginInfo)
+        self.loginID.actionBeforeLogin(url=url, loginInfo=loginInfo)
 
         # Cookieを取得
         cookie = self.getCookie()
@@ -288,7 +289,7 @@ class CookieManager:
 
     @decoInstance.funcBase
     def _getMaxAgeLimit(
-        self, maxAgeValue: int, createTimeValue: int, url: str: dict
+        self, maxAgeValue: int, createTimeValue: int, url: str, loginInfo: dict
     ):
         limitTime = maxAgeValue + createTimeValue
 
@@ -299,13 +300,13 @@ class CookieManager:
             self.logger.error(
                 "有効期限切れのcookie: 既存のCookieを消去して再度IDログイン実施"
             )
-            return self.getCookieFromAction2(url=url=loginInfo)
+            return self.getCookieFromAction2(url=url, loginInfo=loginInfo)
 
     # ----------------------------------------------------------------------------------
     # expiresの時間の有効性を確認する
 
     @decoInstance.funcBase
-    def _getExpiresLimit(self, expiresValue: int, url: str: dict):
+    def _getExpiresLimit(self, expiresValue: int, url: str, loginInfo: dict):
         if self.currentTime < expiresValue:
             self.logger.info("cookieが有効: 既存のCookieを使ってログインを行います")
             return self.cookieMakeAgain()
@@ -313,7 +314,8 @@ class CookieManager:
             self.logger.error(
                 "有効期限切れのcookie: 既存のCookieを消去して再度IDログイン実施"
             )
-            return self.getCookieFromAction2(url=url=loginInfo)
+            return self.getCookieFromAction2(url=url, loginInfo=loginInfo)
+
 
 
 # ----------------------------------------------------------------------------------
