@@ -88,54 +88,47 @@ class SingleProcess:
     def _single_process(self):
         """各プロセスを実行する"""
         try:
-            # * 今回はログインあとのフロートする
+            # TODO ログインする
+            # 手動ログイン# 1
+            self.chrome.get(self.const_element["LOGIN_URL"])
+
+            # TODO ユーザーに既存でブラウザを開いていたら閉じるようにアナウンス
+
+            # 対象のページが開いているかどうかを確認
+            # ログイン後、検索窓が表示されるまで最大300秒待機
+            self.wait.canWaitClick(value=self.const_element["value_1"], timeout=300)
+
             # Googleスプレッドシートから情報取得
             # - 「マスター」シートへアクセス
-            target_df = self.get_gss_df_flow.process(
-                worksheet_name=self.const_gss_info["MASTER_WS"]
-            )
+            target_df = self.get_gss_df_flow.process( worksheet_name=self.const_gss_info["MASTER_WS"] )
 
             # - 1行目から以下の情報を取得
-            #   - 検索キーワード
-            #   - 検索地域
-            #   - 除外ワード1~5
-            #   - 対象Worksheet
             target_df.iterrows()
             for index, row in target_df.iterrows():
                 # 各行の情報を取得
                 search_word = row[self.const_gss_info["SEARCH_WORDS"]]
                 search_region = row[self.const_gss_info["SEARCH_REGION"]]
-
                 excluded_words_first = row[self.const_gss_info["EXCLUDED_WORDS_FIRST"]]
                 excluded_words_second = row[self.const_gss_info["EXCLUDED_WORDS_SECOND"]]
                 excluded_words_third = row[self.const_gss_info["EXCLUDED_WORDS_THIRD"]]
                 excluded_words_fourth = row[self.const_gss_info["EXCLUDED_WORDS_FOURTH"]]
                 excluded_words_fifth = row[self.const_gss_info["EXCLUDED_WORDS_FIFTH"]]
-
                 target_worksheet = row[self.const_gss_info["ADD_WS"]]
 
-                #! ここから処理を開始
-                self.logger.info(f"処理開始： {index + 1}行目")
+                # デバッグ確認
+                self.logger.info(f"処理開始： {index + 1}行目, 対象のWorksheet: {target_worksheet}")
                 self.logger.info( f"検索キーワード: {search_word}\n 検索地域: {search_region}\n 対象Worksheet: {target_worksheet}" )
                 self.logger.info(f"除外ワード1: {excluded_words_first}\n除外ワード2: {excluded_words_second}\n除外ワード3: {excluded_words_third}\n除外ワード4: {excluded_words_fourth}\n除外ワード5: {excluded_words_fifth}")
-                self.logger.info(f"target_worksheet: {target_worksheet}")
 
 
-            # 2
-            # ログインURLへアクセス
-            # - 手動ログイン（ユーザー操作対応）
 
-            # 3
-            # ログイン後、検索窓が表示されるまで最大300秒待機
+            # 2 新しいページを開いてHome画面を表示
+            # -
 
-            # 対象のページが開いているかどうかを確認
-            self.wait.canWaitClick(value=self.const_element["value_1"])
 
-            # 4
-            # 新しいタブを開き、クッキー情報を維持したままアクセス
 
-            # 5
-            # 検索窓にキーワードと地域を入力し、Enterキーで検索実行
+
+            #5 検索窓にキーワードと地域を入力し、Enterキーで検索実行
 
             # 6
             # 表示された h2 タグのリストを取得
