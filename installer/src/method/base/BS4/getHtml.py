@@ -176,7 +176,7 @@ class GetHtml:
 # **********************************************************************************
 
 class GetHtmlParts:
-    def __init__(self, , chrome: WebDriver):
+    def __init__(self, chrome: WebDriver):
 
         # logger
         self.getLogger = Logger()
