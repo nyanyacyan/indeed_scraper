@@ -23,6 +23,7 @@ from method.base.selenium.click_element import ClickElement
 from method.base.utils.file_move import FileMove
 from method.get_gss_df_flow import GetGssDfFlow
 from method.base.selenium.driverWait import Wait
+from method.base.selenium.jump_target_page import JumpTargetPage
 
 from method.base.utils.sub_date_mrg import DateManager
 
@@ -81,6 +82,7 @@ class SingleProcess:
         self.wait = Wait(chrome=self.chrome)
         self.date_manager = DateManager()
         self.select_cell = GssSelectCell()
+        self.new_page = JumpTargetPage(chrome=self.chrome)
 
     # **********************************************************************************
     # ----------------------------------------------------------------------------------
@@ -96,7 +98,7 @@ class SingleProcess:
 
             # 対象のページが開いているかどうかを確認
             # ログイン後、検索窓が表示されるまで最大300秒待機
-            self.wait.canWaitClick(value=self.const_element["value_1"], timeout=300)
+            self.wait.canWaitClick(value=self.const_element["VALUE_1"], timeout=300)
 
             # Googleスプレッドシートから情報取得
             # - 「マスター」シートへアクセス
@@ -121,14 +123,15 @@ class SingleProcess:
                 self.logger.info(f"除外ワード1: {excluded_words_first}\n除外ワード2: {excluded_words_second}\n除外ワード3: {excluded_words_third}\n除外ワード4: {excluded_words_fourth}\n除外ワード5: {excluded_words_fifth}")
 
 
+                # 2 新しいページを開いてHome画面を表示
+                self.new_page.flow_jump_target_page( targetUrl=self.const_element["LOGIN_URL"] )
 
-            # 2 新しいページを開いてHome画面を表示
-            # -
-
-
-
-
-            #5 検索窓にキーワードと地域を入力し、Enterキーで検索実行
+                #5 検索窓にキーワードと地域を入力し、Enterキーで検索実行
+                self.click_element.clickClearInput(
+                    by=self.const_element["BY_1"],
+                    value=self.const_element["VALUE_1"],
+                    input_text=search_word,
+                )
 
             # 6
             # 表示された h2 タグのリストを取得

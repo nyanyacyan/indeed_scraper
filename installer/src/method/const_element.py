@@ -93,10 +93,10 @@ class CommentFlowElement(Enum):
 
 class Element(Enum):
     INDEED = {
-
-        "BY_1": 'xpath',
-        "VALUE_1": '//a[.//span[text()="検索"]]',
         "LOGIN_URL": "https://secure.indeed.com/auth?hl=ja_JP&co=JP",
+        "HOME_URL": "https://jp.indeed.com/",
+        "BY_1": 'id',
+        "VALUE_1": 'text-input-what',
         "": "",
         "": "",
         "": "",
@@ -110,7 +110,15 @@ class Element(Enum):
         "": "",
         "": "",
         "": "",
-
+        "": "",
+        "": "",
+        "": "",
+        "": "",
+        "": "",
+        "": "",
+        "": "",
+        "": "",
+        "": "",
     }
 
 # ----------------------------------------------------------------------------------

@@ -7,7 +7,7 @@ from selenium.webdriver.chrome.webdriver import WebDriver
 
 
 # 自作モジュール
-from .utils import Logger
+from method.base.utils.logger import Logger
 from .driverDeco import jsCompleteWaitDeco
 from .seleniumBase import SeleniumBasicOperations
 from .driverDeco import ClickDeco
@@ -32,7 +32,7 @@ class JumpTargetPage:
     # ----------------------------------------------------------------------------------
 
     @decoInstance.jsCompleteWaitRetry()
-    def flowJumpTargetPage(self, targetUrl: str):
+    def flow_jump_target_page(self, targetUrl: str):
         self.logger.debug(f'targetUrl: {targetUrl}\ntargetUrl_type: {type(targetUrl)}')
         self.openNewWindow()
 
