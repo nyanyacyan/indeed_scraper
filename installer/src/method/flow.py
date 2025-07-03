@@ -6,6 +6,7 @@
 # import
 import os
 from datetime import datetime
+from selenium.webdriver.common.keys import Keys
 
 # 自作モジュール
 from method.base.utils.logger import Logger
@@ -23,6 +24,7 @@ from method.base.selenium.click_element import ClickElement
 from method.base.utils.file_move import FileMove
 from method.get_gss_df_flow import GetGssDfFlow
 from method.base.selenium.driverWait import Wait
+from method.base.selenium.jump_target_page import JumpTargetPage
 
 from method.base.utils.sub_date_mrg import DateManager
 
@@ -81,6 +83,7 @@ class SingleProcess:
         self.wait = Wait(chrome=self.chrome)
         self.date_manager = DateManager()
         self.select_cell = GssSelectCell()
+        self.new_page = JumpTargetPage(chrome=self.chrome)
 
     # **********************************************************************************
     # ----------------------------------------------------------------------------------
@@ -96,7 +99,7 @@ class SingleProcess:
 
             # 対象のページが開いているかどうかを確認
             # ログイン後、検索窓が表示されるまで最大300秒待機
-            self.wait.canWaitClick(value=self.const_element["value_1"], timeout=300)
+            self.wait.canWaitClick(value=self.const_element["VALUE_1"], timeout=300)
 
             # Googleスプレッドシートから情報取得
             # - 「マスター」シートへアクセス
@@ -121,48 +124,59 @@ class SingleProcess:
                 self.logger.info(f"除外ワード1: {excluded_words_first}\n除外ワード2: {excluded_words_second}\n除外ワード3: {excluded_words_third}\n除外ワード4: {excluded_words_fourth}\n除外ワード5: {excluded_words_fifth}")
 
 
+                # 2 新しいページを開いてHome画面を表示
+                self.new_page.flow_jump_target_page( targetUrl=self.const_element["LOGIN_URL"] )
 
-            # 2 新しいページを開いてHome画面を表示
-            # -
+                #5 検索窓にキーワードと地域を入力し、Enterキーで検索実行
+                # キーワード入力
+                self.click_element.clickClearInput( by=self.const_element["BY_2"], value=self.const_element["VALUE_2"], input_text=search_word, )
+
+                # 地域入力
+                location = self.click_element.clickClearInput( by=self.const_element["BY_2"], value=self.const_element["VALUE_2"], input_text=search_word, )
+
+                # Enterキーで検索実行
+                location.send_keys(Keys.RETURN)
+                self.logger.info(f"検索キーワード: {search_word}、地域: {search_region} で検索を実行しました。")
+                self.logger.info(f"EnterKeyを押して検索を実行しました。")
+
+                # jsでのページ読み込み待ち
+                self.wait.jsPageChecker(chrome=self.chrome, timeout=10)
 
 
+                # 6
+                # 表示された h2 タグのリストを取得
+                self.get_element.getElements(by=self.const_element["BY_1"], value=self.const_element["VALUE_1"])
 
+                # 7
+                # 各 h2 を順にクリックし、詳細画面へ遷移
 
-            #5 検索窓にキーワードと地域を入力し、Enterキーで検索実行
+                # 8
+                # 特定HTML要素からテキスト情報を抽出（BeautifulSoup）
+                # - 例：`jobsearch-ViewjobPaneWrapper` などの要素対象
 
-            # 6
-            # 表示された h2 タグのリストを取得
+                # 9
+                # スプシからbasePromptを取得
+                # テキストをプロンプト整形 → ChatGPT APIへ送信
+                # - 取得対象項目：
+                #   - 勤務地
+                #   - 給与（日給／時給など）
+                #   - 雇用形態
+                #   - 除外対象チェック（キーワード含有確認）
 
-            # 7
-            # 各 h2 を順にクリックし、詳細画面へ遷移
+                # 10
+                # ChatGPTレスポンスを辞書形式に変換・整形
 
-            # 8
-            # 特定HTML要素からテキスト情報を抽出（BeautifulSoup）
-            # - 例：`jobsearch-ViewjobPaneWrapper` などの要素対象
+                # 11
+                # 除外ワードと照合し、該当する場合はスキップ
 
-            # 9
-            # スプシからbasePromptを取得
-            # テキストをプロンプト整形 → ChatGPT APIへ送信
-            # - 取得対象項目：
-            #   - 勤務地
-            #   - 給与（日給／時給など）
-            #   - 雇用形態
-            #   - 除外対象チェック（キーワード含有確認）
+                # 12
+                # 辞書データをスプレッドシートに書き込み
 
-            # 10
-            # ChatGPTレスポンスを辞書形式に変換・整形
+                # 13
+                # 次の h2 へ移動して処理を繰り返し実行
 
-            # 11
-            # 除外ワードと照合し、該当する場合はスキップ
-
-            # 12
-            # 辞書データをスプレッドシートに書き込み
-
-            # 13
-            # 次の h2 へ移動して処理を繰り返し実行
-
-            # 14
-            # 次の検索条件行へ移動し、Step [1] から再実行
+                # 14
+                # 次の検索条件行へ移動し、Step [1] から再実行
 
             # 15
             # TODO exe化させる
