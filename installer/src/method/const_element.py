@@ -95,12 +95,20 @@ class Element(Enum):
     INDEED = {
         "LOGIN_URL": "https://secure.indeed.com/auth?hl=ja_JP&co=JP",
         "HOME_URL": "https://jp.indeed.com/",
+
+        # 検索窓の検知
         "BY_1": 'id',
         "VALUE_1": 'text-input-what',
-        "": "",
-        "": "",
-        "": "",
-        "": "",
+
+        # 検索窓のキーワード入力欄
+        "BY_2": "id",
+        "VALUE_2": "text-input-what",
+
+        # 地域入力
+        "BY_3": "id",
+        "VALUE_3": "text-input-where",
+
+        # h2取得
         "": "",
         "": "",
         "": "",
