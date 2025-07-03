@@ -6,6 +6,7 @@
 # import
 import os
 from datetime import datetime
+from selenium.webdriver.common.keys import Keys
 
 # 自作モジュール
 from method.base.utils.logger import Logger
@@ -127,45 +128,55 @@ class SingleProcess:
                 self.new_page.flow_jump_target_page( targetUrl=self.const_element["LOGIN_URL"] )
 
                 #5 検索窓にキーワードと地域を入力し、Enterキーで検索実行
-                self.click_element.clickClearInput(
-                    by=self.const_element["BY_1"],
-                    value=self.const_element["VALUE_1"],
-                    input_text=search_word,
-                )
+                # キーワード入力
+                self.click_element.clickClearInput( by=self.const_element["BY_2"], value=self.const_element["VALUE_2"], input_text=search_word, )
 
-            # 6
-            # 表示された h2 タグのリストを取得
+                # 地域入力
+                location = self.click_element.clickClearInput( by=self.const_element["BY_2"], value=self.const_element["VALUE_2"], input_text=search_word, )
 
-            # 7
-            # 各 h2 を順にクリックし、詳細画面へ遷移
+                # Enterキーで検索実行
+                location.send_keys(Keys.RETURN)
+                self.logger.info(f"検索キーワード: {search_word}、地域: {search_region} で検索を実行しました。")
+                self.logger.info(f"EnterKeyを押して検索を実行しました。")
 
-            # 8
-            # 特定HTML要素からテキスト情報を抽出（BeautifulSoup）
-            # - 例：`jobsearch-ViewjobPaneWrapper` などの要素対象
+                # jsでのページ読み込み待ち
+                self.wait.jsPageChecker(chrome=self.chrome, timeout=10)
 
-            # 9
-            # スプシからbasePromptを取得
-            # テキストをプロンプト整形 → ChatGPT APIへ送信
-            # - 取得対象項目：
-            #   - 勤務地
-            #   - 給与（日給／時給など）
-            #   - 雇用形態
-            #   - 除外対象チェック（キーワード含有確認）
 
-            # 10
-            # ChatGPTレスポンスを辞書形式に変換・整形
+                # 6
+                # 表示された h2 タグのリストを取得
+                self.get_element.getElements(by=self.const_element["BY_1"], value=self.const_element["VALUE_1"])
 
-            # 11
-            # 除外ワードと照合し、該当する場合はスキップ
+                # 7
+                # 各 h2 を順にクリックし、詳細画面へ遷移
 
-            # 12
-            # 辞書データをスプレッドシートに書き込み
+                # 8
+                # 特定HTML要素からテキスト情報を抽出（BeautifulSoup）
+                # - 例：`jobsearch-ViewjobPaneWrapper` などの要素対象
 
-            # 13
-            # 次の h2 へ移動して処理を繰り返し実行
+                # 9
+                # スプシからbasePromptを取得
+                # テキストをプロンプト整形 → ChatGPT APIへ送信
+                # - 取得対象項目：
+                #   - 勤務地
+                #   - 給与（日給／時給など）
+                #   - 雇用形態
+                #   - 除外対象チェック（キーワード含有確認）
 
-            # 14
-            # 次の検索条件行へ移動し、Step [1] から再実行
+                # 10
+                # ChatGPTレスポンスを辞書形式に変換・整形
+
+                # 11
+                # 除外ワードと照合し、該当する場合はスキップ
+
+                # 12
+                # 辞書データをスプレッドシートに書き込み
+
+                # 13
+                # 次の h2 へ移動して処理を繰り返し実行
+
+                # 14
+                # 次の検索条件行へ移動し、Step [1] から再実行
 
             # 15
             # TODO exe化させる
