@@ -109,8 +109,8 @@ class Element(Enum):
         "VALUE_3": "text-input-where",
 
         # h2取得
-        "": "",
-        "": "",
+        "BY_4": "tag",
+        "VALUE_4": "h2",
         "": "",
         "": "",
         "": "",

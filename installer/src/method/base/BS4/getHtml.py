@@ -5,8 +5,8 @@
 
 import requests
 from bs4 import BeautifulSoup
-
 from const_str import FileName
+from selenium.webdriver.chrome.webdriver import WebDriver
 
 # 自作モジュール
 from method.base.utils.logger import Logger
@@ -24,7 +24,7 @@ class GetHtml:
         self.logger = self.getLogger.getLogger()
 
     # ----------------------------------------------------------------------------------
-    # htmlを取得する
+
 
     def get_html(self, url: str):
         try:
@@ -174,3 +174,37 @@ class GetHtml:
 
 # ----------------------------------------------------------------------------------
 # **********************************************************************************
+
+class GetHtmlParts:
+    def __init__(self, , chrome: WebDriver):
+
+        # logger
+        self.getLogger = Logger()
+        self.logger = self.getLogger.getLogger()
+
+        self.chrome = chrome
+
+    # ----------------------------------------------------------------------------------
+    # HTMLパーツを取得するメソッド
+    # TODO ここを整える
+
+
+    def get_html_parts(self):
+        html = self.chrome.page_source
+
+        # BeautifulSoupでHTML解析
+        soup = BeautifulSoup(html, "html.parser")
+
+        # 求人全体のラップを取得
+        wrapper = soup.find("div", id="jobsearch-ViewjobPaneWrapper")
+        if wrapper:
+            # その中から「求人本文」だけを取り出す
+            description_div = wrapper.find("div", class_="jobsearch-JobComponent-description")
+            if description_div:
+                job_description = description_div.get_text(separator="\n", strip=True)
+            else:
+                job_description = "求人本文が見つかりませんでした。"
+        else:
+            job_description = "求人全体のラップが見つかりませんでした。"
+
+        self.logger.info(f"求人本文: {job_description}")

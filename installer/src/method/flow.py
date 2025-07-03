@@ -5,6 +5,7 @@
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 # import
 import os
+from bs4 import BeautifulSoup
 from datetime import datetime
 from selenium.webdriver.common.keys import Keys
 
@@ -145,10 +146,36 @@ class SingleProcess:
 
                 # 6
                 # 表示された h2 タグのリストを取得
-                self.get_element.getElements(by=self.const_element["BY_1"], value=self.const_element["VALUE_1"])
+                h2_element_list = self.get_element.getElements(by=self.const_element["BY_4"], value=self.const_element["VALUE_4"])
 
                 # 7
                 # 各 h2 を順にクリックし、詳細画面へ遷移
+                for h2_element in h2_element_list:
+
+                    # h2要素をクリックして詳細ページへ移動
+                    self.click_element.filter_click_element(element=h2_element)
+
+                    # 8
+                    # 特定HTML要素からテキスト情報を抽出（BeautifulSoup）
+                    # - 例：`jobsearch-ViewjobPaneWrapper` などの要素対象
+                    html = self.chrome.page_source
+
+                    # BeautifulSoupでHTML解析
+                    soup = BeautifulSoup(html, "html.parser")
+
+                    # 求人全体のラップを取得
+                    wrapper = soup.find("div", id="jobsearch-ViewjobPaneWrapper")
+                    if wrapper:
+                        # その中から「求人本文」だけを取り出す
+                        description_div = wrapper.find("div", class_="jobsearch-JobComponent-description")
+                        if description_div:
+                            job_description = description_div.get_text(separator="\n", strip=True)
+                        else:
+                            job_description = "求人本文が見つかりませんでした。"
+                    else:
+                        job_description = "求人全体のラップが見つかりませんでした。"
+
+                    self.logger.info(f"求人本文: {job_description}")
 
                 # 8
                 # 特定HTML要素からテキスト情報を抽出（BeautifulSoup）
