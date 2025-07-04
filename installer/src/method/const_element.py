@@ -94,15 +94,15 @@ class CommentFlowElement(Enum):
 class Element(Enum):
     INDEED = {
         "LOGIN_URL": "https://secure.indeed.com/auth?hl=ja_JP&co=JP",
-        "HOME_URL": "https://jp.indeed.com/",
+        "HOME_URL": "https://jp.indeed.com/?r=us",
 
         # 検索窓の検知
         "BY_1": 'id',
         "VALUE_1": 'text-input-what',
 
-        # 検索窓のキーワード入力欄
+        # Home画面をクリック
         "BY_2": "id",
-        "VALUE_2": "text-input-what",
+        "VALUE_2": "indeed-globalnav-logo",
 
         # 地域入力
         "BY_3": "id",
@@ -111,8 +111,8 @@ class Element(Enum):
         # h2取得
         "BY_4": "tag",
         "VALUE_4": "h2",
-        "": "",
-        "": "",
+        "PARENT_ID": "jobsearch-ViewjobPaneWrapper",
+        "CHILDREN_CLASS": "jobsearch-JobComponent-description",
         "": "",
         "": "",
         "": "",

@@ -26,9 +26,8 @@ from method.base.utils.file_move import FileMove
 from method.get_gss_df_flow import GetGssDfFlow
 from method.base.selenium.driverWait import Wait
 from method.base.selenium.jump_target_page import JumpTargetPage
-
 from method.base.utils.sub_date_mrg import DateManager
-
+from method.base.BS4.getHtml import GetHtmlParts
 
 # const
 from method.const_element import (
@@ -85,6 +84,7 @@ class SingleProcess:
         self.date_manager = DateManager()
         self.select_cell = GssSelectCell()
         self.new_page = JumpTargetPage(chrome=self.chrome)
+        self.get_html_text = GetHtmlParts(chrome=self.chrome)
 
     # **********************************************************************************
     # ----------------------------------------------------------------------------------
@@ -100,7 +100,7 @@ class SingleProcess:
 
             # 対象のページが開いているかどうかを確認
             # ログイン後、検索窓が表示されるまで最大300秒待機
-            self.wait.canWaitClick(value=self.const_element["VALUE_1"], timeout=300)
+            self.wait.canWaitClick(by=self.const_element["BY_1"], value=self.const_element["VALUE_1"], timeout=300)
 
             # Googleスプレッドシートから情報取得
             # - 「マスター」シートへアクセス
@@ -128,12 +128,15 @@ class SingleProcess:
                 # 2 新しいページを開いてHome画面を表示
                 self.new_page.flow_jump_target_page( targetUrl=self.const_element["LOGIN_URL"] )
 
+                # 3 Home画面をクリック
+                self.click_element.clickElement( by=self.const_element["BY_2"], value=self.const_element["VALUE_2"])
+
                 #5 検索窓にキーワードと地域を入力し、Enterキーで検索実行
                 # キーワード入力
-                self.click_element.clickClearInput( by=self.const_element["BY_2"], value=self.const_element["VALUE_2"], input_text=search_word, )
+                self.click_element.clickClearInput( by=self.const_element["BY_1"], value=self.const_element["VALUE_1"], inputText=search_word)
 
                 # 地域入力
-                location = self.click_element.clickClearInput( by=self.const_element["BY_2"], value=self.const_element["VALUE_2"], input_text=search_word, )
+                location = self.click_element.clickClearInput( by=self.const_element["BY_3"], value=self.const_element["VALUE_3"], inputText=search_region)
 
                 # Enterキーで検索実行
                 location.send_keys(Keys.RETURN)
@@ -151,35 +154,27 @@ class SingleProcess:
                 # 7
                 # 各 h2 を順にクリックし、詳細画面へ遷移
                 for h2_element in h2_element_list:
+                    self.logger.info(f"現在の h2 要素のテキスト: {h2_element.text.strip()}")
+                    self.random_sleep._random_sleep(2, 5)  # ランダムな待機時間を設定
 
+                    h2_element.click()
                     # h2要素をクリックして詳細ページへ移動
                     self.click_element.filter_click_element(element=h2_element)
 
                     # 8
                     # 特定HTML要素からテキスト情報を抽出（BeautifulSoup）
-                    # - 例：`jobsearch-ViewjobPaneWrapper` などの要素対象
-                    html = self.chrome.page_source
+                    parent_wrapper = self.get_html_text._get_wrapper( id_name=self.const_element["PARENT_ID"], )
+                    parent_wrapper_text = parent_wrapper.get_text(separator="\n", strip=True)
+                    self.logger.info(f"親要素のテキスト: {parent_wrapper_text[:100]}...")  # 最初の100文字だけ表示
 
-                    # BeautifulSoupでHTML解析
-                    soup = BeautifulSoup(html, "html.parser")
+                    # その中から「求人本文」だけを取り出す
+                    children_wrapper = self.get_html_text._get_children_wrapper(
+                        parent_wrapper=parent_wrapper,
+                        class_name=self.const_element["CHILDREN_CLASS"],
+                    )
+                    children_wrapper_text = children_wrapper.get_text(separator="\n", strip=True)
+                    self.logger.info(f"子要素のテキスト: {children_wrapper_text[:100]}...")  # 最初の100文字だけ表示
 
-                    # 求人全体のラップを取得
-                    wrapper = soup.find("div", id="jobsearch-ViewjobPaneWrapper")
-                    if wrapper:
-                        # その中から「求人本文」だけを取り出す
-                        description_div = wrapper.find("div", class_="jobsearch-JobComponent-description")
-                        if description_div:
-                            job_description = description_div.get_text(separator="\n", strip=True)
-                        else:
-                            job_description = "求人本文が見つかりませんでした。"
-                    else:
-                        job_description = "求人全体のラップが見つかりませんでした。"
-
-                    self.logger.info(f"求人本文: {job_description}")
-
-                # 8
-                # 特定HTML要素からテキスト情報を抽出（BeautifulSoup）
-                # - 例：`jobsearch-ViewjobPaneWrapper` などの要素対象
 
                 # 9
                 # スプシからbasePromptを取得

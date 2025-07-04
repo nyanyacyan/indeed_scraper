@@ -7,6 +7,8 @@ import requests
 from bs4 import BeautifulSoup
 from const_str import FileName
 from selenium.webdriver.chrome.webdriver import WebDriver
+from bs4.element import Tag
+from typing import Optional
 
 # 自作モジュール
 from method.base.utils.logger import Logger
@@ -184,27 +186,46 @@ class GetHtmlParts:
 
         self.chrome = chrome
 
-    # ----------------------------------------------------------------------------------
-    # HTMLパーツを取得するメソッド
-    # TODO ここを整える
+    #! ----------------------------------------------------------------------------------
+    # wrapperからの取得
 
+    def _get_children_wrapper(self, parent_wrapper: Optional[Tag], class_name: str = None, id_name: str = None, tag: str = "div"):
+        children_wrapper = parent_wrapper.find(tag=tag, class_=class_name, id=id_name)
+        self.logger.debug(f"Soup find: class={class_name}, id={id_name}, tag={tag}")
+        return children_wrapper
 
-    def get_html_parts(self):
-        html = self.chrome.page_source
+    #! ----------------------------------------------------------------------------------
+    # 対象の要素を取得
 
-        # BeautifulSoupでHTML解析
-        soup = BeautifulSoup(html, "html.parser")
+    def _get_wrapper(self, class_name: str = None, id_name: str = None, tag: str = "div"):
+        html = self._get_html()
+        self.logger.debug(f"HTMLを取得しました: {html[:100]}...")
+        soup = self._get_soup(html=html)
+        wrapper = soup.find(tag, class_=class_name, id=id_name)
+        if not wrapper:
+            self.logger.error(f"指定された要素が見つかりません: class={class_name}, id={id_name}, tag={tag}")
+            raise ValueError(f"指定された要素が見つかりません: class={class_name}, id={id_name}, tag={tag}")
+        wrapper_text = wrapper.get_text = wrapper.get_text(separator="\n", strip=True)
+        self.logger.debug(f"Wrapper text: {wrapper_text[:100]}...")
+        self.logger.debug(f"Soup find: class={class_name}, id={id_name}, tag={tag}")
+        return wrapper
 
-        # 求人全体のラップを取得
-        wrapper = soup.find("div", id="jobsearch-ViewjobPaneWrapper")
-        if wrapper:
-            # その中から「求人本文」だけを取り出す
-            description_div = wrapper.find("div", class_="jobsearch-JobComponent-description")
-            if description_div:
-                job_description = description_div.get_text(separator="\n", strip=True)
-            else:
-                job_description = "求人本文が見つかりませんでした。"
+    #! ----------------------------------------------------------------------------------
+    # soupに変換
+
+    def _get_soup(self, html: str):
+        if html:
+            soup = BeautifulSoup(html, "html.parser")
+            self.logger.debug(f"soupに変換しました: {soup.prettify()[:100]} ")
+            return soup
         else:
-            job_description = "求人全体のラップが見つかりませんでした。"
+            self.logger.error(f"htmlがありません")
+            raise ValueError("htmlがありません")
 
-        self.logger.info(f"求人本文: {job_description}")
+    # ----------------------------------------------------------------------------------
+    # HTMLを取得
+
+    def _get_html(self):
+        return self.chrome.page_source
+
+    # ----------------------------------------------------------------------------------
