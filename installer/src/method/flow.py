@@ -169,7 +169,6 @@ class SingleProcess:
                     self.random_sleep._random_sleep(2, 5)  # ランダムな待機時間を設定
 
 
-
                 # 9
                 # スプシからbasePromptを取得
                 # テキストをプロンプト整形 → ChatGPT APIへ送信
