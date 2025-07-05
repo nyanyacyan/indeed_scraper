@@ -1,7 +1,7 @@
 # coding: utf-8
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 # export PYTHONPATH="/Volumes/にゃにゃちゃんHD/Project_file/indeed_scraper/installer/src"
-
+# export PYTHONPATH="/Users/nyanyacyan/Desktop/Project_file/indeed_scraper/installer/src"
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 # import
 import os
@@ -157,9 +157,8 @@ class SingleProcess:
                     self.logger.info(f"現在の h2 要素のテキスト: {h2_element.text.strip()}")
                     self.random_sleep._random_sleep(2, 5)  # ランダムな待機時間を設定
 
-                    h2_element.click()
-                    # h2要素をクリックして詳細ページへ移動
                     self.click_element.filter_click_element(element=h2_element)
+                    self.random_sleep._random_sleep(2, 5)  # ランダムな待機時間を設定
 
                     # 8
                     # 特定HTML要素からテキスト情報を抽出（BeautifulSoup）
@@ -167,8 +166,8 @@ class SingleProcess:
 
                     # その中から「求人本文」だけを取り出す
                     children_wrapper = self.get_html_text._get_children_wrapper( parent_wrapper=parent_wrapper, class_name=self.const_element["CHILDREN_CLASS"], )
-                    children_wrapper_text = children_wrapper.get_text(separator="\n", strip=True)
-                    self.logger.info(f"子要素のテキスト: {children_wrapper_text[:100]}...")  # 最初の100文字だけ表示
+                    self.random_sleep._random_sleep(2, 5)  # ランダムな待機時間を設定
+
 
 
                 # 9

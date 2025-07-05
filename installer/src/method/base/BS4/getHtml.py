@@ -190,25 +190,22 @@ class GetHtmlParts:
     # wrapperからの取得
 
     def _get_children_wrapper(self, parent_wrapper: Optional[Tag], class_name: str = None, id_name: str = None):
-        if parent_wrapper in id_name or class_name:
-            self.logger.debug(f"親要素が指定されていません: {parent_wrapper}")
-            raise ValueError("親要素が指定されていません")
-
-        if not class_name and not id_name:
-            self.logger.error("class_nameもid_nameも指定されていません")
-            raise ValueError("class_nameもid_nameも指定されていません")
-
         if id_name:
             self.logger.debug(f"指定されたid: {id_name} を持つ要素を検索します")
             children_wrapper = parent_wrapper.find(id=id_name)
-        else:
+        elif class_name:
             self.logger.debug(f"指定されたclass: {class_name} を持つ要素を検索します")
             children_wrapper = parent_wrapper.find(class_=class_name)
+        else:
+            self.logger.error("class_nameもid_nameも指定されていません")
+            raise ValueError("class_nameもid_nameも指定されていません")
 
         if not children_wrapper:
             self.logger.error(f"指定された要素が見つかりません: class={class_name}, id={id_name}")
             raise ValueError(f"指定された要素が見つかりません: class={class_name}, id={id_name}")
 
+        children_text = children_wrapper.get_text(separator="\n", strip=True)
+        self.logger.info(f"Children wrapper text: {children_text[:100]}...")
         self.logger.debug(f"Soup find: class={class_name}, id={id_name}")
         return children_wrapper
 
