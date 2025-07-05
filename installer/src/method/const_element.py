@@ -111,6 +111,7 @@ class Element(Enum):
         # h2取得
         "BY_4": "tag",
         "VALUE_4": "h2",
+        "PARENT_BY": "id",
         "PARENT_ID": "jobsearch-ViewjobPaneWrapper",
         "CHILDREN_CLASS": "jobsearch-JobComponent-description",
         "": "",

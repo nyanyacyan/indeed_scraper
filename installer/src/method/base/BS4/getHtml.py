@@ -189,25 +189,57 @@ class GetHtmlParts:
     #! ----------------------------------------------------------------------------------
     # wrapperからの取得
 
-    def _get_children_wrapper(self, parent_wrapper: Optional[Tag], class_name: str = None, id_name: str = None, tag: str = "div"):
-        children_wrapper = parent_wrapper.find(tag=tag, class_=class_name, id=id_name)
-        self.logger.debug(f"Soup find: class={class_name}, id={id_name}, tag={tag}")
+    def _get_children_wrapper(self, parent_wrapper: Optional[Tag], class_name: str = None, id_name: str = None):
+        if parent_wrapper in id_name or class_name:
+            self.logger.debug(f"親要素が指定されていません: {parent_wrapper}")
+            raise ValueError("親要素が指定されていません")
+
+        if not class_name and not id_name:
+            self.logger.error("class_nameもid_nameも指定されていません")
+            raise ValueError("class_nameもid_nameも指定されていません")
+
+        if id_name:
+            self.logger.debug(f"指定されたid: {id_name} を持つ要素を検索します")
+            children_wrapper = parent_wrapper.find(id=id_name)
+        else:
+            self.logger.debug(f"指定されたclass: {class_name} を持つ要素を検索します")
+            children_wrapper = parent_wrapper.find(class_=class_name)
+
+        if not children_wrapper:
+            self.logger.error(f"指定された要素が見つかりません: class={class_name}, id={id_name}")
+            raise ValueError(f"指定された要素が見つかりません: class={class_name}, id={id_name}")
+
+        self.logger.debug(f"Soup find: class={class_name}, id={id_name}")
         return children_wrapper
 
     #! ----------------------------------------------------------------------------------
     # 対象の要素を取得
 
-    def _get_wrapper(self, class_name: str = None, id_name: str = None, tag: str = "div"):
+    def _get_wrapper(self, class_name: str = None, id_name: str = None):
         html = self._get_html()
         self.logger.debug(f"HTMLを取得しました: {html[:100]}...")
+        if id_name not in html:
+            self.logger.error(f"HTML内に指定のidが含まれていません: {id_name}")
+            raise ValueError("HTML内に指定のidが含まれていません")
+
+        if not class_name and not id_name:
+            self.logger.error("class_nameもid_nameも指定されていません")
+            raise ValueError("class_nameもid_nameも指定されていません")
+
         soup = self._get_soup(html=html)
-        wrapper = soup.find(tag, class_=class_name, id=id_name)
+        if id_name:
+            self.logger.debug(f"指定されたid: {id_name} を持つ要素を検索します")
+            wrapper = soup.find(id=id_name)
+        else:
+            self.logger.debug(f"指定されたclass: {class_name} を持つ要素を検索します")
+            wrapper = soup.find(class_=class_name)
         if not wrapper:
-            self.logger.error(f"指定された要素が見つかりません: class={class_name}, id={id_name}, tag={tag}")
-            raise ValueError(f"指定された要素が見つかりません: class={class_name}, id={id_name}, tag={tag}")
-        wrapper_text = wrapper.get_text = wrapper.get_text(separator="\n", strip=True)
+            self.logger.error(f"指定された要素が見つかりません: class={class_name}, id={id_name}")
+            raise ValueError(f"指定された要素が見つかりません: class={class_name}, id={id_name}")
+
+        wrapper_text = wrapper.get_text(separator="\n", strip=True)
         self.logger.debug(f"Wrapper text: {wrapper_text[:100]}...")
-        self.logger.debug(f"Soup find: class={class_name}, id={id_name}, tag={tag}")
+        self.logger.debug(f"Soup find: class={class_name}, id={id_name}")
         return wrapper
 
     #! ----------------------------------------------------------------------------------

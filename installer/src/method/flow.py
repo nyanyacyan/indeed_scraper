@@ -163,15 +163,10 @@ class SingleProcess:
 
                     # 8
                     # 特定HTML要素からテキスト情報を抽出（BeautifulSoup）
-                    parent_wrapper = self.get_html_text._get_wrapper( id_name=self.const_element["PARENT_ID"], )
-                    parent_wrapper_text = parent_wrapper.get_text(separator="\n", strip=True)
-                    self.logger.info(f"親要素のテキスト: {parent_wrapper_text[:100]}...")  # 最初の100文字だけ表示
+                    parent_wrapper = self.get_html_text._get_wrapper( id_name=self.const_element["PARENT_ID"], )# 最初の100文字だけ表示
 
                     # その中から「求人本文」だけを取り出す
-                    children_wrapper = self.get_html_text._get_children_wrapper(
-                        parent_wrapper=parent_wrapper,
-                        class_name=self.const_element["CHILDREN_CLASS"],
-                    )
+                    children_wrapper = self.get_html_text._get_children_wrapper( parent_wrapper=parent_wrapper, class_name=self.const_element["CHILDREN_CLASS"], )
                     children_wrapper_text = children_wrapper.get_text(separator="\n", strip=True)
                     self.logger.info(f"子要素のテキスト: {children_wrapper_text[:100]}...")  # 最初の100文字だけ表示
 
