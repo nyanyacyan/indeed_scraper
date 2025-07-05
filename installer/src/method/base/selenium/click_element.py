@@ -293,3 +293,27 @@ class ClickElement:
         self.clickWait.jsPageChecker(chrome=self.chrome)
 
     # ----------------------------------------------------------------------------------
+    # 要素を絞り込みしたものをクリックのみ
+
+    def filter_click_element(self, element: WebElement):
+        self.clickWait.jsPageChecker(chrome=self.chrome)
+        try:
+            element.click()
+            self.logger.debug(f"クリック完了しました: {element}")
+        except ElementClickInterceptedException:
+            self.logger.debug(f"popupなどでClickができません: {element}")
+            self.chrome.execute_script("arguments[0].click();", element)
+
+        except ElementNotInteractableException:
+            self.logger.debug(f"要素があるんだけどクリックができません: {element}")
+            self.chrome.execute_script("arguments[0].click();", element)
+            self.logger.info(f"jsにてクリック実施: {element}")
+
+        except NoSuchElementException:
+            self.logger.warning(f'クリックする要素が見つかりません: {element}')
+            return None
+
+        self.clickWait.jsPageChecker(chrome=self.chrome)
+        return element
+
+    # ----------------------------------------------------------------------------------
