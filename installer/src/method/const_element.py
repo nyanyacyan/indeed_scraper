@@ -23,6 +23,7 @@ class GssInfo(Enum):
         "JSON_KEY_NAME": "sns-auto-430920-08274ad68b41.json",
         "SHEET_URL": "https://docs.google.com/spreadsheets/d/18Vo8pzbGkl-3M7PUDdHOyx52Hm1lo1apyc-U00uznw4/edit?gid=0#gid=0",
         "MASTER_WS": "Master",
+        "CHATGPT_WS": "ChatGPT",
 
         # column名
         "SELECT_CHECK": "実施可否",
@@ -41,6 +42,9 @@ class GssInfo(Enum):
         "SALARY": "給料",
         "WORKING_HOURS": "勤務時間",
         "PAGE_LINK": "リンク",
+
+        "BASE_PROMPT_CELL": "A2",
+        "EXCEPT_PROMPT_CELL": "A3",
     }
 
 

@@ -168,15 +168,30 @@ class SingleProcess:
                     children_wrapper = self.get_html_text._get_children_wrapper( parent_wrapper=parent_wrapper, class_name=self.const_element["CHILDREN_CLASS"], )
                     self.random_sleep._random_sleep(2, 5)  # ランダムな待機時間を設定
 
+                    # 9 スプシからbasePromptを取得
+                    # 基本プロンプト
+                    base_prompt = self.gss_read._get_cell_value( worksheet_name=self.const_gss_info["CHATGPT_WS"], json_key_name=self.const_gss_info["JSON_KEY_NAME"], sheet_url=self.const_gss_info["SHEET_URL"], cell=self.const_gss_info["BASE_PROMPT_CELL"] )
 
-                # 9
-                # スプシからbasePromptを取得
-                # テキストをプロンプト整形 → ChatGPT APIへ送信
-                # - 取得対象項目：
-                #   - 勤務地
-                #   - 給与（日給／時給など）
-                #   - 雇用形態
-                #   - 除外対象チェック（キーワード含有確認）
+                    # 除外プロンプト
+                    except_prompt = self.gss_read._get_cell_value( worksheet_name=self.const_gss_info["CHATGPT_WS"], json_key_name=self.const_gss_info["JSON_KEY_NAME"], sheet_url=self.const_gss_info["SHEET_URL"], cell=self.const_gss_info["EXCEPT_PROMPT_CELL"] )
+
+                    # 除外ワードをまとめる
+                    excluded_words = [
+                        excluded_words_first,
+                        excluded_words_second,
+                        excluded_words_third,
+                        excluded_words_fourth,
+                        excluded_words_fifth,
+                    ]
+
+                    # 除外プロンプトに追記
+                    for i, word in enumerate(excluded_words, start=1):
+                        if word:
+                            except_prompt += f"\n除外ワード{i}: {word}"
+
+                    # プロンプトを結合
+                    complete_prompt = f"{base_prompt}\n{except_prompt}"
+                    self.logger.debug(f"完成したプロンプト: {complete_prompt}")
 
                 # 10
                 # ChatGPTレスポンスを辞書形式に変換・整形
