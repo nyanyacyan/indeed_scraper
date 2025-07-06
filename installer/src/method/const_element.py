@@ -38,6 +38,8 @@ class GssInfo(Enum):
         "BASE_PROMPT": "base_prompt",
 
         # 追加ページColumn
+        "ADD_DATE": "追加日時",
+        "H2_TITLE": "タイトル",
         "WORK_PLACE": "勤務地",
         "SALARY": "給料",
         "WORKING_HOURS": "勤務時間",

@@ -6,7 +6,7 @@
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 # import
 import time
-from typing import Callable, Optional
+from typing import Callable, Optional, List, Dict
 
 # 自作モジュール
 from method.base.utils.logger import Logger
@@ -254,8 +254,14 @@ class ChatGPTOrder:
     # ----------------------------------------------------------------------------------
 
     async def chatGptRequest(
-        self, endpointUrl: str, model: str, apiKey: str, messages: str, maxTokens: int
+        self, endpointUrl: str, model: str, apiKey: str, messages: List[Dict[str, str]], maxTokens: int
     ):
+        self.logger.debug(f"endpointUrl: {endpointUrl}")
+        self.logger.debug(f"model: {model}")
+        self.logger.debug(f"apiKey: {apiKey}")
+        self.logger.debug(f"messages: {messages}")
+        self.logger.debug(f"maxTokens: {maxTokens}")
+
         return await self.apiRequest.apiRequest(
             method="POST",
             endpointUrl=endpointUrl,
@@ -272,7 +278,7 @@ class ChatGPTOrder:
     # ----------------------------------------------------------------------------------
     # APIの設定情報
 
-    def getJson(self, model: str, messages: str, maxTokens: int):
+    def getJson(self, model: str, messages: List[Dict[str, str]], maxTokens: int):
         return {"model": model, "messages": messages, "max_tokens": maxTokens}
 
 
