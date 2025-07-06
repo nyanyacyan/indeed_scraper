@@ -8,12 +8,11 @@
 import time
 from typing import Callable, Optional
 
-
 # 自作モジュール
-from .utils import Logger
-from .path import BaseToPath
-from ..utils.fileWrite import LimitFileWrite
-from ..API.ApiRequest import ApiRequest
+from method.base.utils.logger import Logger
+from method.base.utils.path import BaseToPath
+from method.base.utils.fileWrite import LimitFileWrite
+from method.base.API.ApiRequest import ApiRequest
 from ..decorators.decorators import Decorators
 
 from const_str import FileName
@@ -43,7 +42,7 @@ class ChatGPTOrder:
         self.fileWrite = LimitFileWrite()
 
     # ----------------------------------------------------------------------------------
-    # SNSバージョン　リクエストした文章とresponseで帰ってきた文章を整理してjsonファイルに書き込む
+    # SNSバージョン リクエストした文章とresponseで帰ってきた文章を整理してjsonファイルに書き込む
 
     async def resultSave(
         self,

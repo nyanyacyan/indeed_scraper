@@ -28,6 +28,7 @@ from method.base.selenium.driverWait import Wait
 from method.base.selenium.jump_target_page import JumpTargetPage
 from method.base.utils.sub_date_mrg import DateManager
 from method.base.BS4.getHtml import GetHtmlParts
+from method.base.AI.AiOrder import ChatGPTOrder
 
 # const
 from method.const_element import (
@@ -35,6 +36,7 @@ from method.const_element import (
     ErrCommentInfo,
     PopUpComment,
     Element,
+    ChatgptInfo,
 )
 
 # flow
@@ -65,6 +67,7 @@ class SingleProcess:
         self.const_element = Element.INDEED.value
         self.const_err_cmt_dict = ErrCommentInfo.INDEED.value
         self.popup_cmt = PopUpComment.INDEED.value
+        self.chat_gpt_info = ChatgptInfo.INDEED.value
 
         # Flow
         self.get_gss_df_flow = GetGssDfFlow(chrome=self.chrome)
@@ -85,6 +88,7 @@ class SingleProcess:
         self.select_cell = GssSelectCell()
         self.new_page = JumpTargetPage(chrome=self.chrome)
         self.get_html_text = GetHtmlParts(chrome=self.chrome)
+        self.chat_gpt_order = ChatGPTOrder()
 
     # **********************************************************************************
     # ----------------------------------------------------------------------------------
@@ -166,6 +170,7 @@ class SingleProcess:
 
                     # その中から「求人本文」だけを取り出す
                     children_wrapper = self.get_html_text._get_children_wrapper( parent_wrapper=parent_wrapper, class_name=self.const_element["CHILDREN_CLASS"], )
+                    result_text = children_wrapper.get_text(separator="\n", strip=True)
                     self.random_sleep._random_sleep(2, 5)  # ランダムな待機時間を設定
 
                     # 9 スプシからbasePromptを取得
@@ -174,6 +179,9 @@ class SingleProcess:
 
                     # 除外プロンプト
                     except_prompt = self.gss_read._get_cell_value( worksheet_name=self.const_gss_info["CHATGPT_WS"], json_key_name=self.const_gss_info["JSON_KEY_NAME"], sheet_url=self.const_gss_info["SHEET_URL"], cell=self.const_gss_info["EXCEPT_PROMPT_CELL"] )
+
+                    # 不備プロンプト
+                    missing_prompt = self.gss_read._get_cell_value( worksheet_name=self.const_gss_info["CHATGPT_WS"], json_key_name=self.const_gss_info["JSON_KEY_NAME"], sheet_url=self.const_gss_info["SHEET_URL"], cell=self.const_gss_info["MISSING_PROMPT_CELL"] )
 
                     # 除外ワードをまとめる
                     excluded_words = [
@@ -192,6 +200,18 @@ class SingleProcess:
                     # プロンプトを結合
                     complete_prompt = f"{base_prompt}\n{except_prompt}"
                     self.logger.debug(f"完成したプロンプト: {complete_prompt}")
+
+                    response_msg = self.chat_gpt_order.resultOutput(
+                        prompt=complete_prompt,
+                        fixedPrompt=missing_prompt,
+                        endpointUrl=self.chat_gpt_info["CHATGPT_API_URL"],
+                        model=self.chat_gpt_info["CHATGPT_MODEL"],
+                        apiKey=self.chat_gpt_info["CHATGPT_API_KEY"],
+                        maxTokens=10000000,
+                        maxlen=100000,
+                    )
+
+                    self.logger.info(f"ChatGPTからのレスポンス: {response_msg}")
 
                 # 10
                 # ChatGPTレスポンスを辞書形式に変換・整形

@@ -44,7 +44,8 @@ class GssInfo(Enum):
         "PAGE_LINK": "リンク",
 
         "BASE_PROMPT_CELL": "A2",
-        "EXCEPT_PROMPT_CELL": "A3",
+        "EXCEPT_PROMPT_CELL": "B2",
+        "MISSING_PROMPT_CELL": "C2",
     }
 
 
@@ -90,6 +91,16 @@ class CommentFlowElement(Enum):
         "INPUT_WORD_COMMENT": "コメント",
         "INPUT_WORD_GOOD": "いいね",
 
+    }
+
+
+# ----------------------------------------------------------------------------------
+
+class ChatgptInfo(Enum):
+    INDEED = {
+        "CHATGPT_API_URL": "https://api.openai.com/v1/chat/completions",
+        "CHATGPT_MODEL": "gpt-4.1-mini",
+        "CHATGPT_API_KEY": os.getenv('CHATGPT_API_KEY'),
     }
 
 
