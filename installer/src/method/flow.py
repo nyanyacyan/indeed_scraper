@@ -4,7 +4,8 @@
 # export PYTHONPATH="/Users/nyanyacyan/Desktop/Project_file/indeed_scraper/installer/src"
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 # import
-import os
+import os, asyncio, json
+from typing import Optional
 from bs4 import BeautifulSoup
 from datetime import datetime
 from selenium.webdriver.common.keys import Keys
@@ -28,6 +29,7 @@ from method.base.selenium.driverWait import Wait
 from method.base.selenium.jump_target_page import JumpTargetPage
 from method.base.utils.sub_date_mrg import DateManager
 from method.base.BS4.getHtml import GetHtmlParts
+from method.base.AI.AiOrder import ChatGPTOrder
 
 # const
 from method.const_element import (
@@ -35,6 +37,7 @@ from method.const_element import (
     ErrCommentInfo,
     PopUpComment,
     Element,
+    ChatgptInfo,
 )
 
 # flow
@@ -65,6 +68,7 @@ class SingleProcess:
         self.const_element = Element.INDEED.value
         self.const_err_cmt_dict = ErrCommentInfo.INDEED.value
         self.popup_cmt = PopUpComment.INDEED.value
+        self.chat_gpt_info = ChatgptInfo.INDEED.value
 
         # Flow
         self.get_gss_df_flow = GetGssDfFlow(chrome=self.chrome)
@@ -85,11 +89,12 @@ class SingleProcess:
         self.select_cell = GssSelectCell()
         self.new_page = JumpTargetPage(chrome=self.chrome)
         self.get_html_text = GetHtmlParts(chrome=self.chrome)
+        self.chat_gpt_order = ChatGPTOrder()
 
     # **********************************************************************************
     # ----------------------------------------------------------------------------------
 
-    def _single_process(self):
+    async def _single_process(self):
         """各プロセスを実行する"""
         try:
             # TODO ログインする
@@ -125,6 +130,8 @@ class SingleProcess:
                 self.logger.info(f"除外ワード1: {excluded_words_first}\n除外ワード2: {excluded_words_second}\n除外ワード3: {excluded_words_third}\n除外ワード4: {excluded_words_fourth}\n除外ワード5: {excluded_words_fifth}")
 
 
+                self.wait.canWaitClick(by=self.const_element["BY_1"], value=self.const_element["VALUE_1"], timeout=300)
+
                 # 2 新しいページを開いてHome画面を表示
                 self.new_page.flow_jump_target_page( targetUrl=self.const_element["LOGIN_URL"] )
 
@@ -153,42 +160,133 @@ class SingleProcess:
 
                 # 7
                 # 各 h2 を順にクリックし、詳細画面へ遷移
+                gss_write_dict_list = []  # スプレッドシートに書き込むための辞書リスト
                 for h2_element in h2_element_list:
-                    self.logger.info(f"現在の h2 要素のテキスト: {h2_element.text.strip()}")
+                    # 各 h2 要素のテキストを取得
+                    h2_title = h2_element.text.strip()
+                    self.logger.info(f"現在の h2 要素のテキスト: {h2_title}")
                     self.random_sleep._random_sleep(2, 5)  # ランダムな待機時間を設定
 
                     self.click_element.filter_click_element(element=h2_element)
                     self.random_sleep._random_sleep(2, 5)  # ランダムな待機時間を設定
 
+                    current_url = self.chrome.current_url
+                    self.logger.info(f"現在のURL: {current_url}")
+
                     # 8
                     # 特定HTML要素からテキスト情報を抽出（BeautifulSoup）
                     parent_wrapper = self.get_html_text._get_wrapper( id_name=self.const_element["PARENT_ID"], )# 最初の100文字だけ表示
 
+
                     # その中から「求人本文」だけを取り出す
                     children_wrapper = self.get_html_text._get_children_wrapper( parent_wrapper=parent_wrapper, class_name=self.const_element["CHILDREN_CLASS"], )
+                    result_text = children_wrapper.get_text(separator="\n", strip=True)
                     self.random_sleep._random_sleep(2, 5)  # ランダムな待機時間を設定
 
+                    # 9 スプシからbasePromptを取得
+                    # 基本プロンプト
+                    base_prompt = self.gss_read._get_cell_value( worksheet_name=self.const_gss_info["CHATGPT_WS"], json_key_name=self.const_gss_info["JSON_KEY_NAME"], sheet_url=self.const_gss_info["SHEET_URL"], cell=self.const_gss_info["BASE_PROMPT_CELL"] )
 
-                # 9
-                # スプシからbasePromptを取得
-                # テキストをプロンプト整形 → ChatGPT APIへ送信
-                # - 取得対象項目：
-                #   - 勤務地
-                #   - 給与（日給／時給など）
-                #   - 雇用形態
-                #   - 除外対象チェック（キーワード含有確認）
+                    # 除外プロンプト
+                    except_prompt = self.gss_read._get_cell_value( worksheet_name=self.const_gss_info["CHATGPT_WS"], json_key_name=self.const_gss_info["JSON_KEY_NAME"], sheet_url=self.const_gss_info["SHEET_URL"], cell=self.const_gss_info["EXCEPT_PROMPT_CELL"] )
 
-                # 10
-                # ChatGPTレスポンスを辞書形式に変換・整形
+                    # 不備プロンプト
+                    missing_prompt = self.gss_read._get_cell_value( worksheet_name=self.const_gss_info["CHATGPT_WS"], json_key_name=self.const_gss_info["JSON_KEY_NAME"], sheet_url=self.const_gss_info["SHEET_URL"], cell=self.const_gss_info["MISSING_PROMPT_CELL"] )
 
-                # 11
-                # 除外ワードと照合し、該当する場合はスキップ
+                    # 除外ワードをまとめる
+                    excluded_words = [
+                        excluded_words_first,
+                        excluded_words_second,
+                        excluded_words_third,
+                        excluded_words_fourth,
+                        excluded_words_fifth,
+                    ]
 
-                # 12
-                # 辞書データをスプレッドシートに書き込み
+                    # 除外プロンプトに追記
+                    for i, word in enumerate(excluded_words, start=1):
+                        if word:
+                            except_prompt += f"\n除外ワード{i}: {word}"
 
-                # 13
-                # 次の h2 へ移動して処理を繰り返し実行
+                    # プロンプトを結合
+                    complete_prompt = f"{base_prompt}\n{except_prompt}"
+                    self.logger.debug(f"完成したプロンプト: {complete_prompt}")
+
+                    response_msg = await self.chat_gpt_order.resultOutput(
+                        prompt=complete_prompt,
+                        fixedPrompt=missing_prompt,
+                        endpointUrl=self.chat_gpt_info["CHATGPT_API_URL"],
+                        model=self.chat_gpt_info["CHATGPT_MODEL"],
+                        apiKey=self.chat_gpt_info["CHATGPT_API_KEY"],
+                        maxTokens=4000,
+                        maxlen=100000,
+                    )
+
+                    self.logger.info(f"ChatGPTからのレスポンス: {response_msg}, {type(response_msg)}型")
+
+                    # レスポンスがNoneの場合、再リクエストを行う
+                    if response_msg is None:
+                        self.logger.info("ChatGPTからのレスポンスが None です。再リクエストを行います。")
+
+                        # 再リクエストを行う
+                        response_msg = await self.chat_gpt_order.resultOutput(
+                            prompt=complete_prompt,
+                            fixedPrompt=missing_prompt,
+                            endpointUrl=self.chat_gpt_info["CHATGPT_API_URL"],
+                            model=self.chat_gpt_info["CHATGPT_MODEL"],
+                            apiKey=self.chat_gpt_info["CHATGPT_API_KEY"],
+                            maxTokens=4000,
+                            maxlen=100000,
+                        )
+
+                    # 最初の文字が { でない場合は、辞書ではない可能性が高い
+                    if not response_msg.startswith("{"):
+                        return None  # 再リクエストフラグとしてNoneを返す
+
+                    if response_msg == "なし":
+                        self.logger.info("ChatGPTからのレスポンスが 'なし' です。次の h2 へ移動します。")
+                        continue  # 次の h2 へ移動
+
+                    if isinstance(response_msg, str):
+                        response_msg_dict = json.loads(response_msg)
+                        self.logger.info(f"ChatGPTレスポンスを辞書形式に変換: {response_msg_dict}, {type(response_msg_dict)}型")
+                    else:
+                        response_msg_dict = response_msg
+                        self.logger.info(f"ChatGPTレスポンスはすでに辞書形式: {response_msg_dict}")
+
+                    # 辞書の項目に追加
+                    # TODO ここで辞書の並び替えを行う→追加日時、タイトル、勤務地、給料、
+                    response_msg_dict["h2_title"] = h2_title
+                    response_msg_dict["h2_url"] = current_url
+                    response_msg_dict["date"] = self.date_only_stamp
+
+                    self.logger.info(f"レスポンス辞書に追加された情報: {response_msg_dict}")
+
+                    # 10
+                    # 現在のスプシに同じタイトルがないかを確認する
+                    check_df = self.get_gss_df_flow.process( worksheet_name=self.const_gss_info["MASTER_WS"] )
+                    titles = check_df[self.const_gss_info["H2_TITLE"]].tolist()  # タイトルのリストを取得
+
+                    if h2_title in titles:
+                        self.logger.warning(f"タイトル '{h2_title}' はすでに存在します。次の h2 へ移動します。")
+                        continue
+
+
+
+                    gss_write_dict_list.append(response_msg_dict)
+
+
+
+                self.logger.info(f"全ての h2 要素の処理が完了しました。")
+                self.logger.info(f"スプレッドシートに書き込むデータ: {gss_write_dict_list}")
+
+                # TODO 書き込むWorksheetの取得
+
+                # TODO 書き込むWorksheetのAのcellが一番最初にNoneになっているcellを特定する
+
+                # TODO DataFrameでそのまま書き出す
+                # TODO 下記をSpreadsheet_write.pyに定義
+                # set_with_dataframe(ws, df, row=next_row, include_column_header=False)
+
 
                 # 14
                 # 次の検索条件行へ移動し、Step [1] から再実行
@@ -253,6 +351,9 @@ class SingleProcess:
 
 if __name__ == "__main__":
 
-    test_flow = SingleProcess()
-    # 引数入力
-    test_flow._single_process()
+    # test_flow = SingleProcess()
+    # # 引数入力
+    # test_flow._single_process()
+
+    process = SingleProcess()
+    asyncio.run(process._single_process())

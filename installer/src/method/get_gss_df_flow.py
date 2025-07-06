@@ -144,3 +144,18 @@ class GetGssDfFlow:
             self.chrome.quit()
             self.popup.popupCommentOnly( popupTitle=self.const_err_cmt_dict["POPUP_TITLE_SHEET_INPUT_ERR"], comment=self.const_err_cmt_dict["POPUP_TITLE_SHEET_CHECK"], )
 
+    # ----------------------------------------------------------------------------------
+    # 特定のセルの値を取得
+
+    def get_cell_value(self, worksheet_name: str, cell: str):
+        try:
+            # スプシにアクセス（Worksheet指定）
+            cell_value = self.select_cell.get_cell_value(worksheet_name=worksheet_name, cell=cell, json_key_name=self.const_gss_info['JSON_KEY_NAME'], sheet_url=self.const_gss_info['SHEET_URL'])
+            self.logger.info(f"取得したセルの値: {cell_value}")
+            return cell_value
+
+        except Exception as e:
+            process_error_comment = ( f"{self.__class__.__name__} 処理中にエラーが発生 {e}" )
+            self.logger.error(process_error_comment)
+            self.chrome.quit()
+            self.popup.popupCommentOnly( popupTitle=self.const_err_cmt_dict["POPUP_TITLE_SHEET_INPUT_ERR"], comment=self.const_err_cmt_dict["POPUP_TITLE_SHEET_CHECK"], )

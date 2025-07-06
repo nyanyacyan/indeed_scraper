@@ -256,6 +256,32 @@ class GetDataGSSAPI:
 
 
     # ----------------------------------------------------------------------------------
+    # 特定のワークシートのセルの値を取得
+
+    @decoInstance.retryAction(maxRetry=3, delay=30)
+    def _get_cell_value(self, worksheet_name: str, json_key_name: str, sheet_url: str, cell: str):
+        client = self.client(json_key_name=json_key_name)
+
+        self.logger.debug( f"利用可能なワークシート: {client.open_by_url(sheet_url).worksheets(worksheet_name)}" )
+
+        # 対象のスプシを開く
+        worksheet = client.open_by_url(sheet_url).worksheet(worksheet_name)
+
+        # デバッグ用
+        all_values = worksheet.get_all_values()
+        self.logger.debug(f"ワークシート全データ: {all_values}")
+
+        # シートのデータを取得→ここでのデータは辞書型
+        # columnの行に空白があると読込ができない→入力されてる部分以外を選択して消去
+        cell_value = worksheet.acell(cell).value
+
+        self.logger.info( f"スプシのセル {cell} の値: {cell_value}")
+
+        return cell_value
+
+
+    # ----------------------------------------------------------------------------------
+
     # スプシにあるWorksheetのリストを返す
     # GUIに返す
 

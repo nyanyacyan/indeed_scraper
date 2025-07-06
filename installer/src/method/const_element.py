@@ -23,6 +23,7 @@ class GssInfo(Enum):
         "JSON_KEY_NAME": "sns-auto-430920-08274ad68b41.json",
         "SHEET_URL": "https://docs.google.com/spreadsheets/d/18Vo8pzbGkl-3M7PUDdHOyx52Hm1lo1apyc-U00uznw4/edit?gid=0#gid=0",
         "MASTER_WS": "Master",
+        "CHATGPT_WS": "ChatGPT",
 
         # column名
         "SELECT_CHECK": "実施可否",
@@ -37,10 +38,16 @@ class GssInfo(Enum):
         "BASE_PROMPT": "base_prompt",
 
         # 追加ページColumn
+        "ADD_DATE": "追加日時",
+        "H2_TITLE": "タイトル",
         "WORK_PLACE": "勤務地",
         "SALARY": "給料",
         "WORKING_HOURS": "勤務時間",
         "PAGE_LINK": "リンク",
+
+        "BASE_PROMPT_CELL": "A2",
+        "EXCEPT_PROMPT_CELL": "B2",
+        "MISSING_PROMPT_CELL": "C2",
     }
 
 
@@ -86,6 +93,16 @@ class CommentFlowElement(Enum):
         "INPUT_WORD_COMMENT": "コメント",
         "INPUT_WORD_GOOD": "いいね",
 
+    }
+
+
+# ----------------------------------------------------------------------------------
+
+class ChatgptInfo(Enum):
+    INDEED = {
+        "CHATGPT_API_URL": "https://api.openai.com/v1/chat/completions",
+        "CHATGPT_MODEL": "gpt-4.1-mini",
+        "CHATGPT_API_KEY": os.getenv('CHATGPT_API_KEY'),
     }
 
 
