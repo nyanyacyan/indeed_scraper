@@ -256,6 +256,20 @@ class GetDataGSSAPI:
 
 
     # ----------------------------------------------------------------------------------
+    # APIを使ってGSSからデータを取得してDataFrameに変換
+    # GUIからWorksheetを指定してdfを返す
+
+    @decoInstance.retryAction(maxRetry=3, delay=30)
+    def _get_gss_url(self, json_key_name: str, sheet_url: str):
+        client = self.client(json_key_name=json_key_name)
+
+        # 対象のスプシを開く
+        spreadsheet = client.open_by_url(sheet_url)
+
+        return spreadsheet
+
+
+    # ----------------------------------------------------------------------------------
     # 特定のワークシートのセルの値を取得
 
     @decoInstance.retryAction(maxRetry=3, delay=30)
