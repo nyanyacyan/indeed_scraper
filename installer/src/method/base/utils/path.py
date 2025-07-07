@@ -47,6 +47,19 @@ class BaseToPath:
         return logsPath
 
     # ----------------------------------------------------------------------------------
+    # test_logs_fileを取得
+
+    def test_logs_path(self, levelsUp: int = 4, subDirName: str = "test_logs"):
+        resultOutputPath = self.getResultOutputPath(
+            levelsUp=levelsUp, dirName=self.resultBox
+        )
+        test_log_path = resultOutputPath / subDirName / self.currentDate
+        self.isDirExists(path=test_log_path)
+        self.logger.debug(f"logsPath: {test_log_path}")
+
+        return test_log_path
+
+    # ----------------------------------------------------------------------------------
     # inputDataの中にあるFilePathを取得
 
     def getInputDataFilePath(self, fileName: str, levelsUp: int = 2):
