@@ -162,21 +162,31 @@ class SingleProcess:
                 # 各 h2 を順にクリックし、詳細画面へ遷移
                 gss_write_dict_list = []  # スプレッドシートに書き込むための辞書リスト
                 for h2_element in h2_element_list:
+                    self.logger.info(f"現在 {index + 1} / {len(h2_element_list)} 回目の実施")
+
                     # 各 h2 要素のテキストを取得
                     h2_title = h2_element.text.strip()
                     self.logger.info(f"現在の h2 要素のテキスト: {h2_title}")
                     self.random_sleep._random_sleep(2, 5)  # ランダムな待機時間を設定
 
+                    # 現在のスプシに同じタイトルがないかを確認する
+                    check_df = self.get_gss_df_flow.process( worksheet_name=self.const_gss_info["MASTER_WS"] )
+                    titles = check_df[self.const_gss_info["H2_TITLE"]].tolist()  # タイトルのリストを取得
+
+                    if h2_title in titles:
+                        self.logger.warning(f"タイトル '{h2_title}' はすでに存在します。次の h2 へ移動します。")
+                        continue
+
+                    # h2 要素をクリックして詳細ページへ遷移
                     self.click_element.filter_click_element(element=h2_element)
                     self.random_sleep._random_sleep(2, 5)  # ランダムな待機時間を設定
 
+                    # 現在のページのURLを取得
                     current_url = self.chrome.current_url
                     self.logger.info(f"現在のURL: {current_url}")
 
-                    # 8
                     # 特定HTML要素からテキスト情報を抽出（BeautifulSoup）
                     parent_wrapper = self.get_html_text._get_wrapper( id_name=self.const_element["PARENT_ID"], )# 最初の100文字だけ表示
-
 
                     # その中から「求人本文」だけを取り出す
                     children_wrapper = self.get_html_text._get_children_wrapper( parent_wrapper=parent_wrapper, class_name=self.const_element["CHILDREN_CLASS"], )
@@ -254,39 +264,37 @@ class SingleProcess:
                         self.logger.info(f"ChatGPTレスポンスはすでに辞書形式: {response_msg_dict}")
 
                     # 辞書の項目に追加
-                    # TODO ここで辞書の並び替えを行う→追加日時、タイトル、勤務地、給料、
-                    response_msg_dict["h2_title"] = h2_title
-                    response_msg_dict["h2_url"] = current_url
-                    response_msg_dict["date"] = self.date_only_stamp
 
-                    self.logger.info(f"レスポンス辞書に追加された情報: {response_msg_dict}")
+                    response_msg_fix = {
+                        self.const_gss_info["ADD_DATE"]: self.date_only_stamp,
+                        self.const_gss_info["H2_TITLE"]: h2_title,
+                        self.const_gss_info["WORK_PLACE"]: current_url,
+                        self.const_gss_info["SALARY"]: response_msg_dict.get("勤務地", ""),
+                        self.const_gss_info["WORKING_HOURS"]: response_msg_dict.get("給料", ""),
+                        self.const_gss_info["PAGE_LINK"]: response_msg_dict.get("勤務時間", ""),
+                    }
 
-                    # 10
-                    # 現在のスプシに同じタイトルがないかを確認する
-                    check_df = self.get_gss_df_flow.process( worksheet_name=self.const_gss_info["MASTER_WS"] )
-                    titles = check_df[self.const_gss_info["H2_TITLE"]].tolist()  # タイトルのリストを取得
-
-                    if h2_title in titles:
-                        self.logger.warning(f"タイトル '{h2_title}' はすでに存在します。次の h2 へ移動します。")
-                        continue
-
-
-
-                    gss_write_dict_list.append(response_msg_dict)
-
+                    self.logger.info(f"レスポンス辞書に追加された情報: {response_msg_fix}")
+                    self.logger.info(f"現在 {index + 1} / {len(h2_element_list)} 回目、完了した h2 要素のタイトル: {h2_title}")
 
 
                 self.logger.info(f"全ての h2 要素の処理が完了しました。")
                 self.logger.info(f"スプレッドシートに書き込むデータ: {gss_write_dict_list}")
 
-                # TODO 書き込むWorksheetの取得
+                # 書き込むWorksheetの取得
+                # 書き込むA列の最初のNoneの行数を取得
+                ss = self.gss_read._get_gss_url(self.const_gss_info["SHEET_URL"])
+                none_sell_num = self.select_cell._get_none_row_index_with_worksheet(spreadsheet=ss, worksheet_name=target_worksheet)
+                write_cell = "A" + str(none_sell_num)
 
-                # TODO 書き込むWorksheetのAのcellが一番最初にNoneになっているcellを特定する
-
-                # TODO DataFrameでそのまま書き出す
-                # TODO 下記をSpreadsheet_write.pyに定義
+                # 下記をSpreadsheet_write.pyに定義
                 # set_with_dataframe(ws, df, row=next_row, include_column_header=False)
-
+                self.gss_write.write_data_by_url(
+                    gss_info=self.const_gss_info,
+                    worksheet_name=target_worksheet,
+                    cell=write_cell,
+                    input_data=response_msg_fix,
+                )
 
                 # 14
                 # 次の検索条件行へ移動し、Step [1] から再実行
