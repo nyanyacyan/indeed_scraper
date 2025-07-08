@@ -153,11 +153,19 @@ class KeyFile(Enum):
 
 
 class EndPoint(Enum):
-    Line = "https://notify-api.line.me/api/notify"
-    Chatwork = "https://api.chatwork.com/v2"
-    Slack = "https://slack.com/api/chat.postMessage"
-    Discord = "https://discord.com/api/webhooks/1220239805204660314/niMRY1OVJwYh3PY9X9EfF2O6C7ZPhukRDoXfsXlwGBz4n1HKE81MA1B6TQiy2FUnzHfk"
+    LINE = "https://notify-api.line.me/api/notify"
+    CHATWORK = "https://api.chatwork.com/v2"
+    SLACK = "https://slack.com/api/chat.postMessage"
+    DISCORD = "https://discord.com/api/webhooks/1220239805204660314/niMRY1OVJwYh3PY9X9EfF2O6C7ZPhukRDoXfsXlwGBz4n1HKE81MA1B6TQiy2FUnzHfk"
 
+# ----------------------------------------------------------------------------------
+# Slackチャネル
+
+class SlackChannel(Enum):
+    INFO_CHANNEL = "#info-notification"
+    WARNING_CHANNEL = "#warning-notification"
+    ERROR_CHANNEL = "#error-notification"
+    CRITICAL_CHANNEL = "#critical-notification"
 
 # ----------------------------------------------------------------------------------
 # Driveからダウンロードする際の拡張子の定義

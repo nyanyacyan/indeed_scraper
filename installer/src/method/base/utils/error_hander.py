@@ -4,11 +4,13 @@
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 import sys
 from datetime import datetime
+from selenium.webdriver.chrome.webdriver import WebDriver
 
 # 自作モジュール
 from method.base.utils.logger import Logger
 from method.base.utils.popup import Popup
 from method.base.utils.path import BaseToPath
+from method.base.notify.notify import SlackNotify
 
 # ----------------------------------------------------------------------------------
 ####################################################################################
@@ -16,7 +18,7 @@ from method.base.utils.path import BaseToPath
 
 
 class CriticalHandler:
-    def __init__(self):
+    def __init__(self, chrome: WebDriver= None):
 
         # logger
         self.getLogger = Logger()
@@ -24,6 +26,8 @@ class CriticalHandler:
 
         # インスタンス
         self.popup = Popup()
+        self.test_log = TestLog()
+        self.slack = SlackNotify()
 
     #!###################################################################################
     # criticalエラーの際にポップアップを表示してsystem.exitする
@@ -35,12 +39,14 @@ class CriticalHandler:
         sys.exit(1)
 
     #!###################################################################################
+    # ----------------------------------------------------------------------------------
+    # ----------------------------------------------------------------------------------
 
 # **********************************************************************************
 
 
 class ErrorHandler:
-    def __init__(self):
+    def __init__(self, chrome: WebDriver= None):
 
         # logger
         self.getLogger = Logger()
@@ -48,6 +54,8 @@ class ErrorHandler:
 
         # インスタンス
         self.popup = Popup()
+        self.test_log = TestLog()
+        self.slack = SlackNotify()
 
     #!###################################################################################
     # criticalエラーの際にポップアップを表示してsystem.exitする
@@ -59,19 +67,28 @@ class ErrorHandler:
         sys.exit(1)
 
     #!###################################################################################
+    # ----------------------------------------------------------------------------------
+    # ----------------------------------------------------------------------------------
 
 # **********************************************************************************
 
 
 class WarningHandler:
-    def __init__(self):
+    def __init__(self, chrome: WebDriver= None):
 
         # logger
         self.getLogger = Logger()
         self.logger = self.getLogger.getLogger()
 
+
+        self.chrome = chrome
+
+
         # インスタンス
+        self.path = BaseToPath()
         self.popup = Popup()
+        self.test_log = TestLog()
+        self.slack = SlackNotify()
 
     #!###################################################################################
     # criticalエラーの際にポップアップを表示してsystem.exitする
@@ -83,12 +100,45 @@ class WarningHandler:
         sys.exit(1)
 
     #!###################################################################################
+# ----------------------------------------------------------------------------------
+# テスト用ログファイルに追記
+
+
+# ----------------------------------------------------------------------------------
+# slack通知のみ
+
+    def slack_notify(self, err_msg: str, e: Exception):
+        error_comment = f"{err_msg}\n{e}"
+        self.slack.send_message(error_comment)
+
+# ----------------------------------------------------------------------------------
+# slack通知+スクショ
+
+    def slack_notify_with_screenshot(self, err_msg: str, e: Exception):
+        error_comment = f"{err_msg}\n{e}"
+        self.logger.error(error_comment)
+        self.chrome.save_screenshot("screenshot.png")
+
+        self.slack.slack_image_notify(self.slack.slack_notify_token, error_comment, screenshot_path)
+
+
+# ----------------------------------------------------------------------------------
+# slack通知＋ファイル送信
+
+# ----------------------------------------------------------------------------------
+# slack通知＋ふぁいる
+
+# ----------------------------------------------------------------------------------
+# スクショのpath
+    def get_screenshot_path(self) -> str:
+        self.path.
+# ----------------------------------------------------------------------------------
 
 # **********************************************************************************
 # 基本は処理が成功した際に使用
 
 class InfoHandler:
-    def __init__(self):
+    def __init__(self, chrome: WebDriver= None):
 
         # logger
         self.getLogger = Logger()
@@ -96,6 +146,8 @@ class InfoHandler:
 
         # インスタンス
         self.popup = Popup()
+        self.test_log = TestLog()
+        self.slack = SlackNotify()
 
     #!###################################################################################
     # criticalエラーの際にポップアップを表示してsystem.exitする
@@ -106,6 +158,11 @@ class InfoHandler:
         self.popup.popupCommentOnly(popupTitle=info_title, comment=info_msg)
 
     #!###################################################################################
+    # ----------------------------------------------------------------------------------
+
+
+
+    # ----------------------------------------------------------------------------------
 # **********************************************************************************
 
 
@@ -118,7 +175,6 @@ class TestLog:
 
         # インスタンス
         self.path = BaseToPath()
-
         self.time_minutes = datetime.now().strftime("%H%M")
 
     #! ----------------------------------------------------------------------------------

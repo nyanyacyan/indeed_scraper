@@ -6,15 +6,15 @@
 import time
 import os
 import requests
-from ..const_domain_search import EndPoint
+from method.const_str import EndPoint
 from PIL import Image
 from dotenv import load_dotenv
 import aiofiles
 
 # 自作モジュール
-from .utils import Logger
-from .decorators import Decorators
-from .ApiRequest import ApiRequest
+from method.base.utils.logger import Logger
+from method.base.decorators.decorators import Decorators
+from method.base.API.ApiRequest import ApiRequest
 
 from const_str import FileName
 
@@ -384,7 +384,7 @@ class SlackNotify:
 
     def slack_image_notify(self, slack_notify_token, message, img_path):
         try:
-            end_point = EndPoint.Slack.value
+            end_point = EndPoint.SLACK.value
 
             headers = {"Authorization": f"Bearer {slack_notify_token}"}
             data = {
