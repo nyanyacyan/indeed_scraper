@@ -111,7 +111,7 @@ class GssSelectCell:
     #! ----------------------------------------------------------------------------------
     # worksheetも指定してA列の最初のNoneの行を取得
 
-    def _get_none_row_index_with_worksheet(self, spreadsheet: gspread.models.Spreadsheet, worksheet_name: str):
+    def _get_none_row_index_with_worksheet(self, spreadsheet: gspread.Spreadsheet, worksheet_name: str):
         # worksheet_nameのA列の値を取得
         worksheet = spreadsheet.worksheet(worksheet_name)
         input_str_list = list(filter(None, worksheet.col_values(1)))

@@ -45,9 +45,9 @@ class GssInfo(Enum):
         "WORKING_HOURS": "勤務時間",
         "PAGE_LINK": "リンク",
 
-        "BASE_PROMPT_CELL": "A2",
-        "EXCEPT_PROMPT_CELL": "B2",
-        "MISSING_PROMPT_CELL": "C2",
+        "BASE_PROMPT_COL": "base_prompt",
+        "EXCEPT_PROMPT_COL": "except_prompt",
+        "MISSING_PROMPT_COL": "fixed_prompt",
     }
 
 

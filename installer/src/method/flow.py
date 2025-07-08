@@ -153,16 +153,20 @@ class SingleProcess:
                 # jsでのページ読み込み待ち
                 self.wait.jsPageChecker(chrome=self.chrome, timeout=10)
 
+                # 対象のデータフレームを取得
+                check_df = self.get_gss_df_flow.no_filter_process( worksheet_name= target_worksheet )
 
-                # 6
+                # ChatGPTのWSのデータフレームを取得
+                chatgpt_df = self.get_gss_df_flow.no_filter_process(self.const_gss_info["CHATGPT_WS"] )
+
                 # 表示された h2 タグのリストを取得
                 h2_element_list = self.get_element.getElements(by=self.const_element["BY_4"], value=self.const_element["VALUE_4"])
 
                 # 7
                 # 各 h2 を順にクリックし、詳細画面へ遷移
                 gss_write_dict_list = []  # スプレッドシートに書き込むための辞書リスト
-                for h2_element in h2_element_list:
-                    self.logger.info(f"現在 {index + 1} / {len(h2_element_list)} 回目の実施")
+                for i, h2_element in enumerate(h2_element_list):
+                    self.logger.info(f"現在 {i + 1} / {len(h2_element_list)} 回目の実施")
 
                     # 各 h2 要素のテキストを取得
                     h2_title = h2_element.text.strip()
@@ -170,12 +174,15 @@ class SingleProcess:
                     self.random_sleep._random_sleep(2, 5)  # ランダムな待機時間を設定
 
                     # 現在のスプシに同じタイトルがないかを確認する
-                    check_df = self.get_gss_df_flow.process( worksheet_name=self.const_gss_info["MASTER_WS"] )
-                    titles = check_df[self.const_gss_info["H2_TITLE"]].tolist()  # タイトルのリストを取得
+                    if check_df is not None and not check_df.empty:
+                        self.logger.info(f"スプレッドシート '{target_worksheet}' にデータが存在します。")
+                        titles = check_df[self.const_gss_info["H2_TITLE"]].tolist()  # タイトルのリストを取得
 
-                    if h2_title in titles:
-                        self.logger.warning(f"タイトル '{h2_title}' はすでに存在します。次の h2 へ移動します。")
-                        continue
+                        if h2_title in titles:
+                            self.logger.warning(f"タイトル '{h2_title}' はすでに存在します。次の h2 へ移動します。")
+                            continue
+                    else:
+                        self.logger.info(f"スプレッドシート '{target_worksheet}' は空です。新しいデータを追加します。")
 
                     # h2 要素をクリックして詳細ページへ遷移
                     self.click_element.filter_click_element(element=h2_element)
@@ -195,13 +202,14 @@ class SingleProcess:
 
                     # 9 スプシからbasePromptを取得
                     # 基本プロンプト
-                    base_prompt = self.gss_read._get_cell_value( worksheet_name=self.const_gss_info["CHATGPT_WS"], json_key_name=self.const_gss_info["JSON_KEY_NAME"], sheet_url=self.const_gss_info["SHEET_URL"], cell=self.const_gss_info["BASE_PROMPT_CELL"] )
+
+                    base_prompt = chatgpt_df["BASE_PROMPT_COL"].iloc[0]
 
                     # 除外プロンプト
-                    except_prompt = self.gss_read._get_cell_value( worksheet_name=self.const_gss_info["CHATGPT_WS"], json_key_name=self.const_gss_info["JSON_KEY_NAME"], sheet_url=self.const_gss_info["SHEET_URL"], cell=self.const_gss_info["EXCEPT_PROMPT_CELL"] )
+                    except_prompt = chatgpt_df["EXCEPT_PROMPT_COL"].iloc[0]
 
                     # 不備プロンプト
-                    missing_prompt = self.gss_read._get_cell_value( worksheet_name=self.const_gss_info["CHATGPT_WS"], json_key_name=self.const_gss_info["JSON_KEY_NAME"], sheet_url=self.const_gss_info["SHEET_URL"], cell=self.const_gss_info["MISSING_PROMPT_CELL"] )
+                    missing_prompt = chatgpt_df["MISSING_PROMPT_COL"].iloc[0]
 
                     # 除外ワードをまとめる
                     excluded_words = [
@@ -275,17 +283,22 @@ class SingleProcess:
                     }
 
                     self.logger.info(f"レスポンス辞書に追加された情報: {response_msg_fix}")
-                    self.logger.info(f"現在 {index + 1} / {len(h2_element_list)} 回目、完了した h2 要素のタイトル: {h2_title}")
+                    self.logger.info(f"現在 {i + 1} / {len(h2_element_list)} 回目、完了した h2 要素のタイトル: {h2_title}")
 
+                    self.logger.warning(f"【{i + 1}つ目】処理完了\n現在のリストの中身: \n{gss_write_dict_list}")
 
                 self.logger.info(f"全ての h2 要素の処理が完了しました。")
                 self.logger.info(f"スプレッドシートに書き込むデータ: {gss_write_dict_list}")
 
                 # 書き込むWorksheetの取得
                 # 書き込むA列の最初のNoneの行数を取得
-                ss = self.gss_read._get_gss_url(self.const_gss_info["SHEET_URL"])
-                none_sell_num = self.select_cell._get_none_row_index_with_worksheet(spreadsheet=ss, worksheet_name=target_worksheet)
-                write_cell = "A" + str(none_sell_num)
+                if not target_df.empty or target_df is not None:
+                    none_cell_num = len(target_df) + 1
+                    write_cell = "A" + str(none_cell_num)
+
+                else:
+                    # 対象のWorksheetが空の場合、最初の行に書き込む
+                    write_cell = "A2"
 
                 # 下記をSpreadsheet_write.pyに定義
                 # set_with_dataframe(ws, df, row=next_row, include_column_header=False)
