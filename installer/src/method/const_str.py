@@ -164,8 +164,8 @@ class EndPoint(Enum):
 class SlackChannel(Enum):
     INFO_CHANNEL = "#info-notification"
     WARNING_CHANNEL = "#warning-notification"
-    ERROR_CHANNEL = "#error-notification"
-    CRITICAL_CHANNEL = "#critical-notification"
+    ERROR_CHANNEL = "#errorログ"
+    ERROR_FILE_CHANNEL = "#errorファイル"
 
 # ----------------------------------------------------------------------------------
 # Driveからダウンロードする際の拡張子の定義

@@ -11,6 +11,7 @@ from method.base.utils.logger import Logger
 from method.base.utils.popup import Popup
 from method.base.utils.path import BaseToPath
 from method.base.notify.notify import SlackNotify
+from method.const_str import SlackChannel
 
 # ----------------------------------------------------------------------------------
 ####################################################################################
@@ -24,12 +25,23 @@ class CriticalHandler:
         self.getLogger = Logger()
         self.logger = self.getLogger.getLogger()
 
+        # chrome
+        self.chrome = chrome
+
         # インスタンス
+        self.path = BaseToPath()
         self.popup = Popup()
         self.test_log = TestLog()
         self.slack = SlackNotify()
 
-    #!###################################################################################
+        # const
+        self.error_channel = SlackChannel.ERROR_CHANNEL.value
+        self.error_file_channel = SlackChannel.ERROR_FILE_CHANNEL.value
+
+        # date
+        self.fullCurrentDate = datetime.now().strftime("%y%m%d_%H%M%S")
+
+    # ----------------------------------------------------------------------------------
     # criticalエラーの際にポップアップを表示してsystem.exitする
 
     def popup_process(self, err_title: str, err_msg: str, e: Exception):
@@ -38,10 +50,53 @@ class CriticalHandler:
         self.popup.popupCommentOnly(popupTitle=err_title, comment=error_comment)
         sys.exit(1)
 
-    #!###################################################################################
     # ----------------------------------------------------------------------------------
-    # ----------------------------------------------------------------------------------
+    # テスト用ログファイルに追記
 
+    def append_test_log(self, content: str):
+        self.test_log.append_test_log(content)
+
+    # ----------------------------------------------------------------------------------
+    # slack通知のみ
+
+    def slack_notify(self, err_msg: str, e: Exception):
+        error_comment = f"{err_msg}\n{e}"
+        self.slack.send_message(error_comment)
+
+    # ----------------------------------------------------------------------------------
+    # slack通知+スクショ
+
+    def slack_notify_with_screenshot(self, err_msg: str, e: Exception):
+        error_comment = f"{err_msg}\n{e}"
+        self.logger.error(error_comment)
+        screenshot_path = self._get_screenshot_path()
+        full_path = screenshot_path / f"warning_{self.fullCurrentDate}.png"
+        self.logger.info(f"スクリーンショットの保存先: {full_path}")
+        self.chrome.save_screenshot(full_path)
+        self.slack.slack_image_notify(message=error_comment, channel=self.error_channel, img_path=full_path)
+
+    # ----------------------------------------------------------------------------------
+    # slack通知＋ファイル送信
+
+    def slack_notify_with_file(self, err_msg: str, e: Exception):
+        error_comment = f"{err_msg}\n{e}"
+        self.logger.error(error_comment)
+        test_log_file_path = self.test_log.get_log_file_path()
+        if test_log_file_path.exists():
+            self.logger.info(f"テストログファイルのパス: {test_log_file_path}")
+        else:
+            self.logger.error(f"テストログファイルが存在しないため送信できません: {test_log_file_path}")
+            return
+        self.slack.slack_textfile_notify(message=error_comment, channel=self.error_file_channel, file_path=test_log_file_path)
+
+    # ----------------------------------------------------------------------------------
+    # スクショのpath
+
+    def _get_screenshot_path(self) -> str:
+        screenshot_path = self.path.screenshot_path
+        self.logger.info(f"スクリーンショットのパス: {screenshot_path}, {type(screenshot_path)} 型")
+        return screenshot_path
+# ----------------------------------------------------------------------------------
 # **********************************************************************************
 
 
@@ -52,12 +107,23 @@ class ErrorHandler:
         self.getLogger = Logger()
         self.logger = self.getLogger.getLogger()
 
+        # chrome
+        self.chrome = chrome
+
         # インスタンス
+        self.path = BaseToPath()
         self.popup = Popup()
         self.test_log = TestLog()
         self.slack = SlackNotify()
 
-    #!###################################################################################
+        # const
+        self.error_channel = SlackChannel.ERROR_CHANNEL.value
+        self.error_file_channel = SlackChannel.ERROR_FILE_CHANNEL.value
+
+        # date
+        self.fullCurrentDate = datetime.now().strftime("%y%m%d_%H%M%S")
+
+    # ----------------------------------------------------------------------------------
     # criticalエラーの際にポップアップを表示してsystem.exitする
 
     def popup_process(self, err_title: str, err_msg: str, e: Exception):
@@ -66,10 +132,53 @@ class ErrorHandler:
         self.popup.popupCommentOnly(popupTitle=err_title, comment=error_comment)
         sys.exit(1)
 
-    #!###################################################################################
     # ----------------------------------------------------------------------------------
-    # ----------------------------------------------------------------------------------
+    # テスト用ログファイルに追記
 
+    def append_test_log(self, content: str):
+        self.test_log.append_test_log(content)
+
+    # ----------------------------------------------------------------------------------
+    # slack通知のみ
+
+    def slack_notify(self, err_msg: str, e: Exception):
+        error_comment = f"{err_msg}\n{e}"
+        self.slack.send_message(error_comment)
+
+    # ----------------------------------------------------------------------------------
+    # slack通知+スクショ
+
+    def slack_notify_with_screenshot(self, err_msg: str, e: Exception):
+        error_comment = f"{err_msg}\n{e}"
+        self.logger.error(error_comment)
+        screenshot_path = self._get_screenshot_path()
+        full_path = screenshot_path / f"warning_{self.fullCurrentDate}.png"
+        self.logger.info(f"スクリーンショットの保存先: {full_path}")
+        self.chrome.save_screenshot(full_path)
+        self.slack.slack_image_notify(message=error_comment, channel=self.error_channel, img_path=full_path)
+
+    # ----------------------------------------------------------------------------------
+    # slack通知＋ファイル送信
+
+    def slack_notify_with_file(self, err_msg: str, e: Exception):
+        error_comment = f"{err_msg}\n{e}"
+        self.logger.error(error_comment)
+        test_log_file_path = self.test_log.get_log_file_path()
+        if test_log_file_path.exists():
+            self.logger.info(f"テストログファイルのパス: {test_log_file_path}")
+        else:
+            self.logger.error(f"テストログファイルが存在しないため送信できません: {test_log_file_path}")
+            return
+        self.slack.slack_textfile_notify(message=error_comment, channel=self.error_file_channel, file_path=test_log_file_path)
+
+    # ----------------------------------------------------------------------------------
+    # スクショのpath
+
+    def _get_screenshot_path(self) -> str:
+        screenshot_path = self.path.screenshot_path
+        self.logger.info(f"スクリーンショットのパス: {screenshot_path}, {type(screenshot_path)} 型")
+        return screenshot_path
+# ----------------------------------------------------------------------------------
 # **********************************************************************************
 
 
@@ -80,9 +189,8 @@ class WarningHandler:
         self.getLogger = Logger()
         self.logger = self.getLogger.getLogger()
 
-
+        # chrome
         self.chrome = chrome
-
 
         # インスタンス
         self.path = BaseToPath()
@@ -90,7 +198,14 @@ class WarningHandler:
         self.test_log = TestLog()
         self.slack = SlackNotify()
 
-    #!###################################################################################
+        # const
+        self.error_channel = SlackChannel.ERROR_CHANNEL.value
+        self.error_file_channel = SlackChannel.ERROR_FILE_CHANNEL.value
+
+        # date
+        self.fullCurrentDate = datetime.now().strftime("%y%m%d_%H%M%S")
+
+    # ----------------------------------------------------------------------------------
     # criticalエラーの際にポップアップを表示してsystem.exitする
 
     def popup_process(self, err_title: str, err_msg: str, e: Exception):
@@ -99,39 +214,53 @@ class WarningHandler:
         self.popup.popupCommentOnly(popupTitle=err_title, comment=error_comment)
         sys.exit(1)
 
-    #!###################################################################################
-# ----------------------------------------------------------------------------------
-# テスト用ログファイルに追記
+    # ----------------------------------------------------------------------------------
+    # テスト用ログファイルに追記
 
+    def append_test_log(self, content: str):
+        self.test_log.append_test_log(content)
 
-# ----------------------------------------------------------------------------------
-# slack通知のみ
+    # ----------------------------------------------------------------------------------
+    # slack通知のみ
 
     def slack_notify(self, err_msg: str, e: Exception):
         error_comment = f"{err_msg}\n{e}"
         self.slack.send_message(error_comment)
 
-# ----------------------------------------------------------------------------------
-# slack通知+スクショ
+    # ----------------------------------------------------------------------------------
+    # slack通知+スクショ
 
     def slack_notify_with_screenshot(self, err_msg: str, e: Exception):
         error_comment = f"{err_msg}\n{e}"
         self.logger.error(error_comment)
-        self.chrome.save_screenshot("screenshot.png")
+        screenshot_path = self._get_screenshot_path()
+        full_path = screenshot_path / f"warning_{self.fullCurrentDate}.png"
+        self.logger.info(f"スクリーンショットの保存先: {full_path}")
+        self.chrome.save_screenshot(full_path)
+        self.slack.slack_image_notify(message=error_comment, channel=self.error_channel, img_path=full_path)
 
-        self.slack.slack_image_notify(self.slack.slack_notify_token, error_comment, screenshot_path)
+    # ----------------------------------------------------------------------------------
+    # slack通知＋ファイル送信
 
+    def slack_notify_with_file(self, err_msg: str, e: Exception):
+        error_comment = f"{err_msg}\n{e}"
+        self.logger.error(error_comment)
+        test_log_file_path = self.test_log.get_log_file_path()
+        if test_log_file_path.exists():
+            self.logger.info(f"テストログファイルのパス: {test_log_file_path}")
+        else:
+            self.logger.error(f"テストログファイルが存在しないため送信できません: {test_log_file_path}")
+            return
+        self.slack.slack_textfile_notify(message=error_comment, channel=self.error_file_channel, file_path=test_log_file_path)
 
-# ----------------------------------------------------------------------------------
-# slack通知＋ファイル送信
+    # ----------------------------------------------------------------------------------
+    # スクショのpath
 
-# ----------------------------------------------------------------------------------
-# slack通知＋ふぁいる
+    def _get_screenshot_path(self) -> str:
+        screenshot_path = self.path.screenshot_path
+        self.logger.info(f"スクリーンショットのパス: {screenshot_path}, {type(screenshot_path)} 型")
+        return screenshot_path
 
-# ----------------------------------------------------------------------------------
-# スクショのpath
-    def get_screenshot_path(self) -> str:
-        self.path.
 # ----------------------------------------------------------------------------------
 
 # **********************************************************************************
@@ -144,24 +273,77 @@ class InfoHandler:
         self.getLogger = Logger()
         self.logger = self.getLogger.getLogger()
 
+        # chrome
+        self.chrome = chrome
+
         # インスタンス
+        self.path = BaseToPath()
         self.popup = Popup()
         self.test_log = TestLog()
         self.slack = SlackNotify()
 
-    #!###################################################################################
+        # const
+        self.error_channel = SlackChannel.ERROR_CHANNEL.value
+        self.error_file_channel = SlackChannel.ERROR_FILE_CHANNEL.value
+
+        # date
+        self.fullCurrentDate = datetime.now().strftime("%y%m%d_%H%M%S")
+
+    # ----------------------------------------------------------------------------------
     # criticalエラーの際にポップアップを表示してsystem.exitする
 
-    def popup_process(self, info_title: str, info_msg: str):
+    def popup_process(self, err_title: str, err_msg: str, e: Exception):
+        error_comment = f"{err_msg}\n{e}"
+        self.logger.error(error_comment)
+        self.popup.popupCommentOnly(popupTitle=err_title, comment=error_comment)
+        sys.exit(1)
 
-        self.logger.info(info_msg)
-        self.popup.popupCommentOnly(popupTitle=info_title, comment=info_msg)
-
-    #!###################################################################################
     # ----------------------------------------------------------------------------------
+    # テスト用ログファイルに追記
 
+    def append_test_log(self, content: str):
+        self.test_log.append_test_log(content)
 
+    # ----------------------------------------------------------------------------------
+    # slack通知のみ
 
+    def slack_notify(self, err_msg: str, e: Exception):
+        error_comment = f"{err_msg}\n{e}"
+        self.slack.send_message(error_comment)
+
+    # ----------------------------------------------------------------------------------
+    # slack通知+スクショ
+
+    def slack_notify_with_screenshot(self, err_msg: str, e: Exception):
+        error_comment = f"{err_msg}\n{e}"
+        self.logger.error(error_comment)
+        screenshot_path = self._get_screenshot_path()
+        full_path = screenshot_path / f"warning_{self.fullCurrentDate}.png"
+        self.logger.info(f"スクリーンショットの保存先: {full_path}")
+        self.chrome.save_screenshot(full_path)
+        self.slack.slack_image_notify(message=error_comment, channel=self.error_channel, img_path=full_path)
+
+    # ----------------------------------------------------------------------------------
+    # slack通知＋ファイル送信
+
+    def slack_notify_with_file(self, err_msg: str, e: Exception):
+        error_comment = f"{err_msg}\n{e}"
+        self.logger.error(error_comment)
+        test_log_file_path = self.test_log.get_log_file_path()
+        if test_log_file_path.exists():
+            self.logger.info(f"テストログファイルのパス: {test_log_file_path}")
+        else:
+            self.logger.error(f"テストログファイルが存在しないため送信できません: {test_log_file_path}")
+            return
+        self.slack.slack_textfile_notify(message=error_comment, channel=self.error_file_channel, file_path=test_log_file_path)
+
+    # ----------------------------------------------------------------------------------
+    # スクショのpath
+
+    def _get_screenshot_path(self) -> str:
+        screenshot_path = self.path.screenshot_path
+        self.logger.info(f"スクリーンショットのパス: {screenshot_path}, {type(screenshot_path)} 型")
+        return screenshot_path
     # ----------------------------------------------------------------------------------
 # **********************************************************************************
 

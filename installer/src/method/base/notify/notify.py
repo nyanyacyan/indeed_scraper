@@ -333,13 +333,13 @@ class SlackNotify:
         # 通知するチャンネルから権限を選択=> アプリインストールしてトークン作成=> .envに貼り付ける
         # slackの場合、メッセージ+画像はNG。画像+コメントになる
         self.slack_notify_token = os.getenv("SLACK_NOTIFY_TOKEN")
-        self.slack_channel = os.getenv("SLACK_CHANNEL")
+
 
     # ----------------------------------------------------------------------------------
     # 本文のみ
     # os.getenvにてトークンなどを呼び出す
 
-    def slack_notify(self, slack_notify_token, message):
+    def slack_notify(self, message: str, channel: str):
         try:
             self.logger.info(f"********** slack_notify start **********")
 
@@ -347,8 +347,8 @@ class SlackNotify:
 
             end_point = EndPoint.Slack.value
 
-            headers = {"Authorization": f"Bearer {slack_notify_token}"}
-            data = {"channel": {self.slack_channel}, "text": {message}}
+            headers = {"Authorization": f"Bearer {self.slack_notify_token}"}
+            data = {"channel": {channel}, "text": {message}}
 
             response = requests.post(end_point, headers=headers, data=data)
 
@@ -382,13 +382,13 @@ class SlackNotify:
     # 本文＋画像
     # os.getenvにてトークンなどを呼び出す
 
-    def slack_image_notify(self, slack_notify_token, message, img_path):
+    def slack_image_notify(self, message: str, channel: str, img_path):
         try:
             end_point = EndPoint.SLACK.value
 
-            headers = {"Authorization": f"Bearer {slack_notify_token}"}
+            headers = {"Authorization": f"Bearer {self.slack_notify_token}"}
             data = {
-                "channels": self.slack_channel,
+                "channels": channel,
                 "initial_comment": message,
                 "filename": os.path.basename(img_path),
             }
@@ -430,6 +430,53 @@ class SlackNotify:
             self.logger.error(f"line_image_notify 処理中にエラーが発生:{e}")
             raise
 
+
+# ----------------------------------------------------------------------------------
+    # os.getenvにてトークンなどを呼び出す
+
+    def slack_textfile_notify(self, message: str, channel: str, file_path: str):
+        try:
+            end_point = EndPoint.SLACK.value
+
+            headers = {"Authorization": f"Bearer {self.slack_notify_token}"}
+            data = {
+                "channels": channel,
+                "initial_comment": message,
+                "filename": os.path.basename(file_path),
+            }
+
+            # 画像ファイルを指定する（png or jpeg）
+            with open(file_path, "rb") as file_bin:
+                files = {"file": (os.path.basename(file_path), file_bin, "text/plain")}
+
+                # Slackに画像とメッセージを送る
+                response = requests.post( end_point, headers=headers, data=data, files=files )
+
+            if response.status_code == 200:
+                return self.logger.info(f"送信処理完了")
+
+            else:
+                return self.logger.error( f"送信に失敗しました: ステータスコード {response.status_code},{response.text}" )
+
+        except FileNotFoundError as e:
+            self.logger.error(f"指定されてるファイルが見つかりません:{e}")
+            raise
+
+        except requests.exceptions.ConnectionError as e:
+            self.logger.error(f"Connection error: {e}")
+            raise
+
+        except requests.exceptions.Timeout as e:
+            self.logger.error(f"Timeout error: {e}")
+            raise
+
+        except requests.exceptions.RequestException as e:
+            self.logger.error(f"Request error: {e}")
+            raise
+
+        except Exception as e:
+            self.logger.error(f"line_image_notify 処理中にエラーが発生:{e}")
+            raise
 
 # ----------------------------------------------------------------------------------
 # **********************************************************************************
