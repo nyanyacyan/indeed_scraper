@@ -35,7 +35,7 @@ class GssInfo(Enum):
         "EXCLUDED_WORDS_FOURTH": "除外ワード_4",
         "EXCLUDED_WORDS_FIFTH": "除外ワード_5",
         "ADD_WS": "追加Worksheet",
-        "BASE_PROMPT": "base_prompt",
+        "SELECT_MODE": "抽出モード",
 
         # 追加ページColumn
         "ADD_DATE": "追加日時",
@@ -48,6 +48,10 @@ class GssInfo(Enum):
         "BASE_PROMPT_COL": "base_prompt",
         "EXCEPT_PROMPT_COL": "except_prompt",
         "MISSING_PROMPT_COL": "fixed_prompt",
+
+        # 抽出モードの値
+        "ONE_PAGE": "1ページ",
+        "ALL_PAGES": "全ページ",
     }
 
 
@@ -65,8 +69,6 @@ class ErrCommentInfo(Enum):
         "POPUP_TITLE_FACEBOOK_LOGIN_ERR": "ログインが必要です",
         "POPUP_TITLE_SHEET_CHECK": "スプレッドシートのチェックされている項目がありません",
         "POPUP_TITLE_SHEET_START_DATE": "対象の「取得開始日時」の欄が入力されてないです。",
-        "": "",
-        "": "",
         "": "",
         "": "",
         "": "",
@@ -127,13 +129,13 @@ class Element(Enum):
 
         # h2取得
         "BY_4": "tag",
-        "VALUE_4": "h2",
+        "VALUE_4": "//h2[contains(@class, 'jobTitle')]/a/span",
         "PARENT_BY": "id",
         "PARENT_ID": "jobsearch-ViewjobPaneWrapper",
         "CHILDREN_CLASS": "jobsearch-JobComponent-description",
-        "": "",
-        "": "",
-        "": "",
+        "NEXT_BTN_BY": "",
+        "NEXT_BTN_VALUE": "//a[@data-testid='pagination-page-next' and @aria-label='次のページに進むボタン']",
+        "MODAL_CLOSE_BTN": '//button[@aria-label="閉じる" and contains(@class, "css-1rmnyb1")]',
         "": "",
         "": "",
         "": "",
