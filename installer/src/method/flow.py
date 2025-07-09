@@ -162,11 +162,13 @@ class SingleProcess:
                 # 表示された h2 タグのリストを取得
                 h2_element_list = self.get_element.getElements(by=self.const_element["BY_4"], value=self.const_element["VALUE_4"])
 
-                # 7
+                [self.logger.info(f"取得した h2 要素: {h2_element.text.strip()}") for h2_element in h2_element_list]
+
+                count = 1
                 # 各 h2 を順にクリックし、詳細画面へ遷移
                 gss_write_dict_list = []  # スプレッドシートに書き込むための辞書リスト
                 for i, h2_element in enumerate(h2_element_list):
-                    self.logger.info(f"現在 {i + 1} / {len(h2_element_list)} 回目の実施")
+                    self.logger.info(f"現在 {count} / {len(h2_element_list)} 回目の実施")
 
                     # 各 h2 要素のテキストを取得
                     h2_title = h2_element.text.strip()
@@ -180,6 +182,7 @@ class SingleProcess:
 
                         if h2_title in titles:
                             self.logger.warning(f"タイトル '{h2_title}' はすでに存在します。次の h2 へ移動します。")
+                            count += 1
                             continue
                     else:
                         self.logger.info(f"スプレッドシート '{target_worksheet}' は空です。新しいデータを追加します。")
@@ -203,13 +206,13 @@ class SingleProcess:
                     # 9 スプシからbasePromptを取得
                     # 基本プロンプト
 
-                    base_prompt = chatgpt_df["BASE_PROMPT_COL"].iloc[0]
+                    base_prompt = chatgpt_df[self.const_gss_info["BASE_PROMPT_COL"]].iloc[0]
 
                     # 除外プロンプト
-                    except_prompt = chatgpt_df["EXCEPT_PROMPT_COL"].iloc[0]
+                    except_prompt = chatgpt_df[self.const_gss_info["EXCEPT_PROMPT_COL"]].iloc[0]
 
                     # 不備プロンプト
-                    missing_prompt = chatgpt_df["MISSING_PROMPT_COL"].iloc[0]
+                    missing_prompt = chatgpt_df[self.const_gss_info["MISSING_PROMPT_COL"]].iloc[0]
 
                     # 除外ワードをまとめる
                     excluded_words = [
@@ -262,6 +265,7 @@ class SingleProcess:
 
                     if response_msg == "なし":
                         self.logger.info("ChatGPTからのレスポンスが 'なし' です。次の h2 へ移動します。")
+                        count += 1  # カウントを増やす
                         continue  # 次の h2 へ移動
 
                     if isinstance(response_msg, str):
@@ -283,9 +287,14 @@ class SingleProcess:
                     }
 
                     self.logger.info(f"レスポンス辞書に追加された情報: {response_msg_fix}")
-                    self.logger.info(f"現在 {i + 1} / {len(h2_element_list)} 回目、完了した h2 要素のタイトル: {h2_title}")
 
-                    self.logger.warning(f"【{i + 1}つ目】処理完了\n現在のリストの中身: \n{gss_write_dict_list}")
+                    gss_write_dict_list.append(response_msg_fix)
+
+                    self.logger.info(f"現在 {count} / {len(h2_element_list)} 回目、完了した h2 要素のタイトル: {h2_title}")
+
+                    self.logger.warning(f"【{count}つ目】処理完了\n現在のリストの中身: \n{gss_write_dict_list}")
+                    count += 1  # カウントを増やす
+                    continue  # 次の h2 へ移動
 
                 self.logger.info(f"全ての h2 要素の処理が完了しました。")
                 self.logger.info(f"スプレッドシートに書き込むデータ: {gss_write_dict_list}")
