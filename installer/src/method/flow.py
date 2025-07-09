@@ -5,11 +5,9 @@
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 # import
 import os, asyncio, json
-from typing import Optional
-from bs4 import BeautifulSoup
 from datetime import datetime
 from selenium.webdriver.common.keys import Keys
-from selenium.common.exceptions import ElementClickInterceptedException, ElementNotInteractableException, NoSuchElementException, TimeoutException, WebDriverException
+from selenium.common.exceptions import NoSuchElementException
 
 # 自作モジュール
 from method.base.utils.logger import Logger
@@ -380,22 +378,7 @@ class SingleProcess:
             #! 全体テストを構築（main.pyを繰り返し実行するCode作成）
             # TODO 書込Formatを作成してなるべくあとから変更可能なように設計
             # TODO 通知はSlackにする→テストの日付ごとに分けるなどの設計を行ってわかりやすくなるようにする
-            # # 新しいタブを開いてURLにアクセス
-            # main_window = self.chrome.current_window_handle
-            # self.get_element._open_new_page(url=target_user_url)
-            # self.random_sleep._random_sleep(2, 5)
 
-            # # 投稿完了→スプシに日付の書込
-            # self.logger.debug(f"投稿完了→スプシに日付の書込")
-            # self.logger.debug(f"cell: {gss_date_cell}")
-            # self.gss_write.write_data_by_url(gss_info=self.const_gss_info, cell=gss_date_cell, input_data=self.timestamp)
-
-            # # 対象のタブを閉じる
-            # self.chrome.close()
-            # self.chrome.switch_to.window(main_window)
-            # self.logger.debug(f"タブを閉じました: {target_user_url}")
-            # self.logger.warning(f"【{account_process_count + 1}つ目】処理完了  URL: {target_user_url}")
-            # account_process_count += 1
 
         except TimeoutError:
             timeout_comment = "タイムエラー：ログインに失敗している可能性があります。"
