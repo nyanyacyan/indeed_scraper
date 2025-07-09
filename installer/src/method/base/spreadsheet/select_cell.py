@@ -4,7 +4,7 @@
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 import pandas as pd
 from typing import Dict
-
+import gspread
 
 # 自作モジュール
 from method.base.utils.logger import Logger
@@ -108,4 +108,18 @@ class GssSelectCell:
         self.logger.debug(f"書き込み範囲: {cell_range}")
         return cell_range
 
-    # ----------------------------------------------------------------------------------
+    #! ----------------------------------------------------------------------------------
+    # worksheetも指定してA列の最初のNoneの行を取得
+
+    def _get_none_row_index_with_worksheet(self, spreadsheet: gspread.Spreadsheet, worksheet_name: str):
+        # worksheet_nameのA列の値を取得
+        worksheet = spreadsheet.worksheet(worksheet_name)
+        input_str_list = list(filter(None, worksheet.col_values(1)))
+        self.logger.debug(f"取得したリスト: {input_str_list}")
+
+        # 取得したリストの長さを取得
+        row_index = len(input_str_list) + 1
+        self.logger.debug(f"最初にNoneになっている行数: {row_index}")
+        return row_index
+
+    #! ----------------------------------------------------------------------------------

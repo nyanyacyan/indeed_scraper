@@ -130,6 +130,42 @@ class GssWrite:
         raise TimeoutError(f"最大リトライ回数 {max_count} 回を超過しました。")
 
     #!###################################################################################
+    # Worksheetも渡す場合の書き込みメソッド
+
+    def write_dict_list(self, gss_info: Dict, worksheet_name: str, cell: str, input_data: Any, max_count: int=3):
+        retry_count = 0
+        while retry_count < max_count:
+            try:
+                client = self.client(jsonKeyName=gss_info["JSON_KEY_NAME"])
+                selectWorkSheet = client.open_by_url(gss_info["SHEET_URL"]).worksheet(worksheet_name)
+                self.logger.debug(f"input_data: {input_data}")
+
+                df = pd.DataFrame(input_data)  # DataFrameに変換
+
+                values = df.values.tolist()  # ヘッダーとデータを結合
+
+                writeData = selectWorkSheet.update(cell, values)
+                self.logger.info(f"{input_data}を{cell}への書き込み完了")
+                return writeData
+
+            except Exception as e:
+                if retry_count <= 2:
+                    self.logger.warning(f'{self.__class__.__name__} エラー発生、リトライ実施: {retry_count + 1}/{max_count} → {e}')
+                    time.sleep(5)  # 少し待って再取得
+                    retry_count += 1
+                    continue
+
+                elif retry_count == 3:
+                    self.logger.error(f'{self.__class__.__name__} APIエラーの可能性あり 90秒後に再度実施: {retry_count + 1}/{max_count} → {e}')
+                    time.sleep(90)  # 少し待って再取得
+                    retry_count += 1
+                    continue
+
+        # `max_count` に達した場合、エラーを記録
+        self.logger.error(f'{self.__class__.__name__} 最大リトライ回数 {max_count} 回を超過。処理を中断')
+        raise TimeoutError(f"最大リトライ回数 {max_count} 回を超過しました。")
+
+    #!###################################################################################
     # ----------------------------------------------------------------------------------
     # Worksheet存在確認→作成
 

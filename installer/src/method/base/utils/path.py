@@ -47,6 +47,32 @@ class BaseToPath:
         return logsPath
 
     # ----------------------------------------------------------------------------------
+    # test_logs_fileを取得
+
+    def test_logs_path(self, levelsUp: int = 4, subDirName: str = "test_logs"):
+        resultOutputPath = self.getResultOutputPath(
+            levelsUp=levelsUp, dirName=self.resultBox
+        )
+        test_log_path = resultOutputPath / subDirName / self.currentDate
+        self.isDirExists(path=test_log_path)
+        self.logger.debug(f"logsPath: {test_log_path}")
+
+        return test_log_path
+
+    # ----------------------------------------------------------------------------------
+    # screenshotsPathを取得
+
+    def screenshot_path(self, levelsUp: int = 4, subDirName: str = "screenshot"):
+        resultOutputPath = self.getResultOutputPath(
+            levelsUp=levelsUp, dirName=self.resultBox
+        )
+        test_log_path = resultOutputPath / subDirName / self.currentDate
+        self.isDirExists(path=test_log_path)
+        self.logger.debug(f"logsPath: {test_log_path}")
+
+        return test_log_path
+
+    # ----------------------------------------------------------------------------------
     # inputDataの中にあるFilePathを取得
 
     def getInputDataFilePath(self, fileName: str, levelsUp: int = 2):
@@ -227,7 +253,7 @@ class BaseToPath:
     # input_photo内にあるすべてのファイルのフルパスをリスト化する
 
     def _get_photos_all_path_list(self, photo_dir: str):
-        dir_path = Path(photo_dir)
+        dir_path = pathlib.Path(photo_dir)
         all_photos_all_path_list = [file for file in dir_path.rglob('*') if file.is_file()]
         self.logger.debug(f'all_photos_all_path_list: {all_photos_all_path_list}')
         return all_photos_all_path_list
