@@ -215,7 +215,6 @@ class SingleProcess:
 
                         # 9 スプシからbasePromptを取得
                         # 基本プロンプト
-
                         base_prompt = chatgpt_df[self.const_gss_info["BASE_PROMPT_COL"]].iloc[0]
 
                         # 除外プロンプト
@@ -307,8 +306,6 @@ class SingleProcess:
                         break # TODO 書込テスト
                         # continue  # 次の h2 へ移動
 
-
-
                     self.logger.info(f"全ての h2 要素の処理が完了しました。")
                     self.logger.info(f"スプレッドシートに書き込むデータ: {gss_write_dict_list}")
 
@@ -393,10 +390,12 @@ class SingleProcess:
         finally:
             # ✅ Chrome を終了
             self.chrome.quit()
-            self.popup.popupCommentOnly(
-                popupTitle=self.popup_cmt["POPUP_COMPLETE_TITLE"],
-                comment=self.popup_cmt["POPUP_COMPLETE_MSG"],
-            )
+
+            # TODO テスト中
+            # self.popup.popupCommentOnly(
+            #     popupTitle=self.popup_cmt["POPUP_COMPLETE_TITLE"],
+            #     comment=self.popup_cmt["POPUP_COMPLETE_MSG"],
+            # )
 
     # ----------------------------------------------------------------------------------
 
