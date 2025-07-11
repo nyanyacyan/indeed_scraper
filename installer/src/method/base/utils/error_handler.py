@@ -182,7 +182,7 @@ class ErrorHandler:
 # **********************************************************************************
 
 
-class WarningHandler:
+class TestResultAction:
     def __init__(self, chrome: WebDriver= None):
 
         # logger
@@ -240,7 +240,20 @@ class WarningHandler:
         self.slack.slack_image_notify(message=error_comment, channel=self.error_channel, img_path=full_path)
 
     # ----------------------------------------------------------------------------------
-    # slack通知＋ファイル送信
+    # TODO テスト結果ファイルをslack通知＋ファイル送信
+
+    def slack_notify_with_file(self, err_msg: str, e: Exception):
+        error_comment = f"{err_msg}\n{e}"
+        self.logger.error(error_comment)
+        test_log_file_path = self.test_log.get_log_file_path()
+        if test_log_file_path.exists():
+            self.logger.info(f"テストログファイルのパス: {test_log_file_path}")
+        else:
+            self.logger.error(f"テストログファイルが存在しないため送信できません: {test_log_file_path}")
+            return
+        self.slack.slack_textfile_notify(message=error_comment, channel=self.error_file_channel, file_path=test_log_file_path)
+
+    # TODO エラーログファイルをslack通知＋ファイル送信
 
     def slack_notify_with_file(self, err_msg: str, e: Exception):
         error_comment = f"{err_msg}\n{e}"
@@ -261,7 +274,23 @@ class WarningHandler:
         self.logger.info(f"スクリーンショットのパス: {screenshot_path}, {type(screenshot_path)} 型")
         return screenshot_path
 
-# ----------------------------------------------------------------------------------
+    # ----------------------------------------------------------------------------------
+    # TODO テスト結果ログファイルのpath
+
+    def _get_screenshot_path(self) -> str:
+        screenshot_path = self.path.screenshot_path
+        self.logger.info(f"スクリーンショットのパス: {screenshot_path}, {type(screenshot_path)} 型")
+        return screenshot_path
+
+    # ----------------------------------------------------------------------------------
+    # TODO エラーログファイルのpath
+
+    def _get_screenshot_path(self) -> str:
+        screenshot_path = self.path.screenshot_path
+        self.logger.info(f"スクリーンショットのパス: {screenshot_path}, {type(screenshot_path)} 型")
+        return screenshot_path
+
+    # ----------------------------------------------------------------------------------
 
 # **********************************************************************************
 # 基本は処理が成功した際に使用

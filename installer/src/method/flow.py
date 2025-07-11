@@ -213,12 +213,24 @@ class SingleProcess:
                         result_text = children_wrapper.get_text(separator="\n", strip=True)
                         self.random_sleep._random_sleep(2, 5)  # ランダムな待機時間を設定
 
+                        self.logger.info(f"求人本文のテキスト: {result_text[:100]}")  # 最初の100文字だけ表示
+
+                        if not result_text:
+                            self.logger.critical(f"求人本文のテキストが空です。タイトル: {h2_title} の詳細ページで何も取得できませんでした。")
+
+                            # TODO ここにエラーログに追加する
+                            count += 1
+                            continue  # 次の h2 へ移動
+
                         # 9 スプシからbasePromptを取得
                         # 基本プロンプト
                         base_prompt = chatgpt_df[self.const_gss_info["BASE_PROMPT_COL"]].iloc[0]
 
                         # 除外プロンプト
                         except_prompt = chatgpt_df[self.const_gss_info["EXCEPT_PROMPT_COL"]].iloc[0]
+
+                        # 終わり部分のPrompt
+                        close_prompt = chatgpt_df[self.const_gss_info["CLOSE_PROMPT_COL"]].iloc[0]
 
                         # 不備プロンプト
                         missing_prompt = chatgpt_df[self.const_gss_info["MISSING_PROMPT_COL"]].iloc[0]
@@ -238,8 +250,8 @@ class SingleProcess:
                                 except_prompt += f"\n除外ワード{i}: {word}"
 
                         # プロンプトを結合
-                        complete_prompt = f"{base_prompt}\n{except_prompt}"
-                        self.logger.debug(f"完成したプロンプト: {complete_prompt}")
+                        complete_prompt = f"{base_prompt}\n\n{except_prompt}\n\n{close_prompt}\n\n{result_text}"
+                        self.logger.warning(f"完成したプロンプト: {complete_prompt[:1000]}")
 
                         response_msg = await self.chat_gpt_order.resultOutput(
                             prompt=complete_prompt,

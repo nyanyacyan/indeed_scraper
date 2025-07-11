@@ -48,6 +48,7 @@ class GssInfo(Enum):
         "BASE_PROMPT_COL": "base_prompt",
         "EXCEPT_PROMPT_COL": "except_prompt",
         "MISSING_PROMPT_COL": "fixed_prompt",
+        "CLOSE_PROMPT_COL": "close_prompt",
 
         # 抽出モードの値
         "ONE_PAGE": "1ページ",
