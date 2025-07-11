@@ -5,7 +5,6 @@
 
 import requests
 from bs4 import BeautifulSoup
-from const_str import FileName
 from selenium.webdriver.chrome.webdriver import WebDriver
 from bs4.element import Tag
 from typing import Optional

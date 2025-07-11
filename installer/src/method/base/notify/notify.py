@@ -16,7 +16,6 @@ from method.base.utils.logger import Logger
 from method.base.decorators.decorators import Decorators
 from method.base.API.ApiRequest import ApiRequest
 
-from const_str import FileName
 
 
 decoInstance = Decorators()

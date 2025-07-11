@@ -10,7 +10,6 @@ import pathlib
 from datetime import datetime
 
 # 自作モジュール
-# import const
 from method.base.utils.logger import Logger
 from method.const_str import Dir, SubDir, Extension
 from method.base.selenium.errorHandlers import AccessFileNotFoundError
@@ -27,6 +26,9 @@ class BaseToPath:
         # logger
         self.getLogger = Logger()
         self.logger = self.getLogger.getLogger()
+
+        # const
+        self.resultBox = Dir.result.value
 
         # インスタンス
         self.fileNotFoundError = AccessFileNotFoundError()
@@ -63,6 +65,32 @@ class BaseToPath:
     # screenshotsPathを取得
 
     def screenshot_path(self, levelsUp: int = 4, subDirName: str = "screenshot"):
+        resultOutputPath = self.getResultOutputPath(
+            levelsUp=levelsUp, dirName=self.resultBox
+        )
+        test_log_path = resultOutputPath / subDirName / self.currentDate
+        self.isDirExists(path=test_log_path)
+        self.logger.debug(f"logsPath: {test_log_path}")
+
+        return test_log_path
+
+    # ----------------------------------------------------------------------------------
+    # test_result_file_pathを取得
+
+    def test_results_path(self, levelsUp: int = 4, subDirName: str = "test_results"):
+        resultOutputPath = self.getResultOutputPath(
+            levelsUp=levelsUp, dirName=self.resultBox
+        )
+        test_log_path = resultOutputPath / subDirName / self.currentDate
+        self.isDirExists(path=test_log_path)
+        self.logger.debug(f"logsPath: {test_log_path}")
+
+        return test_log_path
+
+    # ----------------------------------------------------------------------------------
+    # error_log_file_pathを取得
+
+    def error_logs_path(self, levelsUp: int = 4, subDirName: str = "error_logs"):
         resultOutputPath = self.getResultOutputPath(
             levelsUp=levelsUp, dirName=self.resultBox
         )

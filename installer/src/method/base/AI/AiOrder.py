@@ -15,7 +15,6 @@ from method.base.utils.fileWrite import LimitFileWrite
 from method.base.API.ApiRequest import ApiRequest
 from ..decorators.decorators import Decorators
 
-from const_str import FileName
 
 
 decoInstance = Decorators()

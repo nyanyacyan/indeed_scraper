@@ -14,9 +14,9 @@ from method.flow import SingleProcess
 
 class Main:
 
-    def main():
+    async def main(self):
         main_flow = SingleProcess()
-        main_flow._single_process()
+        await main_flow._single_process()
 
 # **********************************************************************************
 
