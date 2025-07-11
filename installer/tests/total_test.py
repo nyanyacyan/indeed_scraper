@@ -13,6 +13,7 @@ from installer.src.method.base.utils.logger import Logger
 from installer.src.method.base.utils.path import BaseToPath
 from installer.src.method.base.utils.error_handler import TestLog, TestResultAction
 from installer.src.method.base.utils.time_manager import TimeManager
+from installer.src.method.const_str import SlackChannel
 
 # ####################################################################################
 # **********************************************************************************
@@ -24,7 +25,7 @@ class TestRepeatProcess:
         self.logger = getLogger.getLogger()
 
         # 時間管理
-        self.fullCurrentDate = datetime.now().strftime("%y%m%d_%H%M%S")
+        self.fullCurrentDate = datetime.now().strftime("%y%m%d_%H")
 
         # ランダムスリープ
         self.random_sleep = TimeManager()
@@ -41,6 +42,7 @@ class TestRepeatProcess:
         self.test_result_full_path = os.path.join(self.test_result_log_path, f"test_result_{self.fullCurrentDate}_start.txt")
         self.error_log_full_path = os.path.join(self.error_log_path, f"error_log_{self.fullCurrentDate}_start.txt")
 
+        self.slack_channel = SlackChannel.ERROR_CHANNEL.value
 
     # ----------------------------------------------------------------------------------
     # メインの処理を繰り返し実行する
@@ -52,10 +54,11 @@ class TestRepeatProcess:
         while True:
             try:
                 self.test_log.generate_test_log(self.test_result_full_path)
-                self.logger.info("🚀 テスト開始")
+                self.slack.slack_notify(message=f"<@U094HH4LT1V> テスト開始: {self.fullCurrentDate}", channel=self.slack_channel)
+                self.logger.info(f"🚀 テスト開始 {self.fullCurrentDate}")
 
                 # 処理の実行
-                await self.main.main()
+                # await self.main.main()
 
                 completed_comment = f"【{report_count} / {max_processes} テスト】 正常に終了しました"
                 self.logger.info(completed_comment)
@@ -75,7 +78,7 @@ class TestRepeatProcess:
 
 
             # ランダムに待機（30〜60分）
-            self.random_sleep._random_sleep(30, 60)
+            self.random_sleep._random_sleep(1800, 3600)
             self.logger.info(f"現在のエラー数: {error_count}, レポート数: {report_count}")
             if report_count >= max_processes:
 

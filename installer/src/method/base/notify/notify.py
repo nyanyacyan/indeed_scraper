@@ -344,7 +344,7 @@ class SlackNotify:
 
             self.logger.debug(f"message: {message}")
 
-            end_point = EndPoint.Slack.value
+            end_point = EndPoint.SLACK.value
 
             headers = {"Authorization": f"Bearer {self.slack_notify_token}"}
             data = {"channel": {channel}, "text": {message}}

@@ -44,6 +44,7 @@ class GssInfo(Enum):
         "SALARY": "給料",
         "WORKING_HOURS": "勤務時間",
         "PAGE_LINK": "リンク",
+        "PAGE_ID": "投稿ID",
 
         "BASE_PROMPT_COL": "base_prompt",
         "EXCEPT_PROMPT_COL": "except_prompt",

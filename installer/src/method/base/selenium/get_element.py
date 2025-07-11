@@ -96,8 +96,8 @@ class GetElement:
         self.logger.debug(f"複数の要素を取得: {len(elements)}個の要素を取得\n{elements}")
 
         if not elements:
-            self.logger.error(f"要素が見つかりませんでした: {value}")
-            return None
+            self.logger.error(f"[getElements]要素が見つかりませんでした: {value}")
+            raise ValueError(f"[getElements]要素が見つかりませんでした: {value}")
 
         return elements
 
@@ -158,7 +158,7 @@ class GetElement:
         result_value = element.get_attribute(attribute_value)
         if not result_value:
             self.logger.error(f"指定の要素が見つかりませんでした: {value}")
-            return None
+            raise
 
         self.logger.debug(f"result_value: {result_value}")
         return result_value
@@ -417,8 +417,8 @@ class GetElement:
             self.logger.info(f"jsにてクリック実施: {element}")
 
         except NoSuchElementException:
-            self.logger.error(f"要素が見つかりませんでした: {value}")
-            return None
+            self.logger.error(f"[clickElement] 要素が見つかりませんでした: {value}")
+            raise
 
         self.clickWait.jsPageChecker(chrome=self.chrome)
         return element

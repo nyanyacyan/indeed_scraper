@@ -6,6 +6,7 @@
 # import
 import os, asyncio, json
 from datetime import datetime
+from urllib.parse import urlparse, parse_qs
 from selenium.webdriver.common.keys import Keys
 from selenium.common.exceptions import NoSuchElementException
 
@@ -172,30 +173,31 @@ class SingleProcess:
                 # 各 h2 を順にクリックし、詳細画面へ遷移
                 gss_write_dict_list = []  # スプレッドシートに書き込むための辞書リスト
                 while True:
+                    self.logger.info(f"現在 {count} ページ目 取得開始")
 
+                    try:
                     # 表示された h2 タグのリストを取得
-                    h2_element_list = self.get_element.getElements(value=self.const_element["VALUE_4"])
-                    [self.logger.info(f"取得した h2 要素: {h2_element.text.strip()}") for h2_element in h2_element_list]
-
+                        h2_element_list = self.get_element.getElements(value=self.const_element["VALUE_4"])
+                        [self.logger.info(f"取得した h2 要素: {h2_element.text.strip()}") for h2_element in h2_element_list]
+                    except NoSuchElementException as e:
+                        self.logger.error(f"要素が見つかりませんでした: {e}")
+                        if not self.chrome.session_id:
+                            self.logger.error("chromeが閉じてしまっています。")
+                            break
+                    except Exception as e:
+                        self.logger.error(f"予期しないエラーが発生しました: {e}")
+                        if not self.chrome.session_id:
+                            self.logger.error("chromeが閉じてしまっています。")
+                            break
+                    h2_element_count = 1
                     for i, h2_element in enumerate(h2_element_list):
-                        self.logger.info(f"現在 {count} / {len(h2_element_list)} 回目の実施")
+                        self.logger.info(f"現在 {h2_element_count} / {len(h2_element_list)} 回目の実施")
 
                         # 各 h2 要素のテキストを取得
                         h2_title = h2_element.text.strip()
                         self.logger.info(f"現在の h2 要素のテキスト: {h2_title}")
                         self.random_sleep._random_sleep(2, 5)  # ランダムな待機時間を設定
 
-                        # 現在のスプシに同じタイトルがないかを確認する
-                        if check_df is not None and not check_df.empty:
-                            self.logger.info(f"スプレッドシート '{target_worksheet}' にデータが存在します。")
-                            titles = check_df[self.const_gss_info["H2_TITLE"]].tolist()  # タイトルのリストを取得
-
-                            if h2_title in titles:
-                                self.logger.warning(f"タイトル '{h2_title}' はすでに存在します。次の h2 へ移動します。")
-                                count += 1
-                                continue
-                        else:
-                            self.logger.info(f"スプレッドシート '{target_worksheet}' は空です。新しいデータを追加します。")
 
                         # h2 要素をクリックして詳細ページへ遷移
                         self.click_element.filter_click_element(element=h2_element)
@@ -204,6 +206,29 @@ class SingleProcess:
                         # 現在のページのURLを取得
                         current_url = self.chrome.current_url
                         self.logger.info(f"現在のURL: {current_url}")
+
+                        # vjk（投稿ID）をURLから抽出する
+                        parsed = urlparse(current_url)
+                        query = parse_qs(parsed.query)
+                        vjk_value = query.get("vjk", [""])[0]
+
+                        self.logger.info(f"抽出した vjk（投稿ID）: {vjk_value}")
+
+                        # 現在のスプシに同じタイトルがないかを確認する
+                        if check_df is not None and not check_df.empty:
+                            self.logger.info(f"スプレッドシート '{target_worksheet}' にデータが存在します。")
+
+                            # URLが同一のものがないのかを確認
+                            vjk_list = check_df[self.const_gss_info["PAGE_ID"]].tolist()  # タイトルのリストを取得
+
+                            if vjk_value in vjk_list:
+                                self.logger.warning(f"投稿IDは '{vjk_value}'\n はすでに存在します。次の h2 へ移動します。")
+                                count += 1
+                                continue
+                        else:
+                            self.logger.info(f"スプレッドシート '{target_worksheet}' は空です。新しいデータを追加します。")
+
+
 
                         # 特定HTML要素からテキスト情報を抽出（BeautifulSoup）
                         parent_wrapper = self.get_html_text._get_wrapper( id_name=self.const_element["PARENT_ID"], )# 最初の100文字だけ表示
@@ -220,6 +245,7 @@ class SingleProcess:
 
                             # TODO ここにエラーログに追加する
                             count += 1
+                            h2_element_count += 1  # カウントを増やす
                             continue  # 次の h2 へ移動
 
                         # 9 スプシからbasePromptを取得
@@ -287,6 +313,7 @@ class SingleProcess:
                         if response_msg == "なし":
                             self.logger.info("ChatGPTからのレスポンスが 'なし' です。次の h2 へ移動します。")
                             count += 1  # カウントを増やす
+                            h2_element_count += 1  # カウントを増やす
                             continue  # 次の h2 へ移動
 
                         if isinstance(response_msg, str):
@@ -301,10 +328,11 @@ class SingleProcess:
                         response_msg_fix = {
                             self.const_gss_info["ADD_DATE"]: self.date_only_stamp,
                             self.const_gss_info["H2_TITLE"]: h2_title,
-                            self.const_gss_info["SALARY"]: response_msg_dict.get("勤務地", ""),
-                            self.const_gss_info["WORKING_HOURS"]: response_msg_dict.get("給料", ""),
-                            self.const_gss_info["PAGE_LINK"]: response_msg_dict.get("勤務時間", ""),
-                            self.const_gss_info["WORK_PLACE"]: current_url,
+                            self.const_gss_info["WORK_PLACE"]: response_msg_dict.get("勤務地", ""),
+                            self.const_gss_info["SALARY"]: response_msg_dict.get("給料", ""),
+                            self.const_gss_info["WORKING_HOURS"]: response_msg_dict.get("勤務時間", ""),
+                            self.const_gss_info["PAGE_LINK"]: current_url,
+                            self.const_gss_info["PAGE_ID"]: vjk_value,  # 投稿IDを追加
                         }
 
                         self.logger.info(f"レスポンス辞書に追加された情報: {response_msg_fix}")
@@ -315,7 +343,8 @@ class SingleProcess:
 
                         self.logger.warning(f"【{count}つ目】処理完了\n現在のリストの中身: \n{gss_write_dict_list}")
                         count += 1  # カウントを増やす
-                        break # TODO 書込テスト
+                        h2_element_count += 1  # カウントを増やす
+                        break  # TODO テスト
                         # continue  # 次の h2 へ移動
 
                     self.logger.info(f"全ての h2 要素の処理が完了しました。")
@@ -398,6 +427,7 @@ class SingleProcess:
                 f"{self.__class__.__name__} 処理中にエラーが発生 {e}"
             )
             self.logger.error(process_error_comment)
+            raise
 
         finally:
             # ✅ Chrome を終了
