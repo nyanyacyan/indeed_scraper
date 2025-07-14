@@ -344,8 +344,8 @@ class SingleProcess:
                         self.logger.warning(f"【{count}つ目】処理完了\n現在のリストの中身: \n{gss_write_dict_list}")
                         count += 1  # カウントを増やす
                         h2_element_count += 1  # カウントを増やす
-                        break  # TODO テスト
-                        # continue  # 次の h2 へ移動
+                        # break  # TODO テスト
+                        continue  # 次の h2 へ移動
 
                     self.logger.info(f"全ての h2 要素の処理が完了しました。")
                     self.logger.info(f"スプレッドシートに書き込むデータ: {gss_write_dict_list}")
@@ -412,10 +412,6 @@ class SingleProcess:
             # 15
             # TODO exe化させる
             # →本番用のAPIKEYが必要→差し替えて使う
-
-            #! 全体テストを構築（main.pyを繰り返し実行するCode作成）
-            # TODO 書込Formatを作成してなるべくあとから変更可能なように設計
-            # TODO 通知はSlackにする→テストの日付ごとに分けるなどの設計を行ってわかりやすくなるようにする
 
 
         except TimeoutError:

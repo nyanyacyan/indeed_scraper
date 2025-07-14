@@ -77,7 +77,7 @@ class BaseToPath:
     # ----------------------------------------------------------------------------------
     # test_result_file_pathを取得
 
-    def test_results_path(self, levelsUp: int = 4, subDirName: str = "test_results"):
+    def test_results_path(self, levelsUp: int = 5, subDirName: str = "test_results"):
         resultOutputPath = self.getResultOutputPath(
             levelsUp=levelsUp, dirName=self.resultBox
         )
@@ -90,7 +90,7 @@ class BaseToPath:
     # ----------------------------------------------------------------------------------
     # error_log_file_pathを取得
 
-    def error_logs_path(self, levelsUp: int = 4, subDirName: str = "error_logs"):
+    def error_logs_path(self, levelsUp: int = 5, subDirName: str = "error_logs"):
         resultOutputPath = self.getResultOutputPath(
             levelsUp=levelsUp, dirName=self.resultBox
         )
